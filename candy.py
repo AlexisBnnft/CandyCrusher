@@ -11,3 +11,6 @@ def candy(n, m):
 
     # Return the maximum number of candies that can be collected
     return dp[n][m]
+
+# Example usage
+supermarket_rows = 3
