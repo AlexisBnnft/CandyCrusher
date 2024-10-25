@@ -26,6 +26,12 @@ class Board:
             print('|' + ' '.join(row) + '|')
         print()
 
+    def empty(self):
+        """
+        Empty the board.
+        """
+        self.board = np.array([[' ' for _ in range(self.M)] for _ in range(self.N)])
+
     def is_full(self):
         """
         Check if the board is full (no empty spaces).
@@ -34,11 +40,16 @@ class Board:
     
     def fill_random(self):
         """
-        Fill the board with random candies.
+        Fill empty spaces in the board with random candies.
         """
         for row in range(self.N):
+            full_row=True
             for col in range(self.M):
-                self.board[row, col] = Candy(np.random.randint(1, N_CANDY + 1))
+                if self.board[row, col] == ' ':
+                    self.board[row, col] = Candy(np.random.randint(1, N_CANDY + 1))
+                    full_row=False
+            if full_row:  # Si la ligne est pleine, normalement les rows en dessous sont pleines aussi
+                break
     
     def add_piece(self, candy : Candy, row, col):
         """
@@ -106,5 +117,18 @@ class Board:
             self.remove_piece(row, col)
         self.make_it_fall() # Make it rain baby
         return len(matches)
+    
+    def update(self):
+        """
+        Update the board by removing matches and filling empty spaces.
+        """
+        updated = False
+        while self.remove_matches():
+            self.fill_random() #Modifié pour fill que les cases vides
+            updated = True
+        return updated
+        
+        
+
 
 
