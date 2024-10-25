@@ -1,19 +1,20 @@
 from numpy import *
 
-def candy(n, m):
-    # Create a 2D array to store the maximum number of candies that can be collected
-    dp = zeros((n + 1, m + 1), dtype=int)
+N_CANDY = 6 # Number of different candies
 
-    # Fill the dp array
-    for i in range(1, n + 1):
-        for j in range(1, m + 1):
-            dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]) + 1
+class Candy:
+    def __init__(self, id_candy):
+        self.id_candy = id_candy
 
-    # Return the maximum number of candies that can be collected
-    return dp[n][m]
-
-# Example usage
-supermarket_rows = 3
-def teub(alexis):
-    return "3cm"
-
+    def __str__(self):
+        return str(self.id_candy)
+    
+    def __repr__(self):
+        return f"Candy({self.id_candy})"
+    
+    def __eq__(self, other):
+        return self.id_candy == other.id_candy
+    
+    def __ne__(self, other):
+        return self.id_candy != other.id_candy
+    
