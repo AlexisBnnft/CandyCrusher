@@ -38,6 +38,12 @@ class Board:
         """
         return np.all(self.board != ' ')
     
+    def no_moves(self):
+        """
+        Check if there are any possible moves left.
+        """
+        ## Import actions? double import?
+    
     def fill_random(self):
         """
         Fill empty spaces in the board with random candies.
