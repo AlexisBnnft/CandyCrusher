@@ -17,6 +17,7 @@ class Board:
         self.N = N
         self.M = M
         self.board = np.array([[' ' for _ in range(M)] for _ in range(N)])
+        self.score = 0
 
     def display(self):
         """
@@ -122,6 +123,7 @@ class Board:
         for (row, col) in matches:
             self.remove_piece(row, col)
         self.make_it_fall() # Make it rain baby
+        self.score += self.scoring_function(len(matches))
         return len(matches)
     
     def update(self):
@@ -140,17 +142,39 @@ class Board:
         """
         legal_moves = []
         
-        for row in range(self.N - 1):
-            for col in range(self.M - 1):
-                if Action(self).swap(row, col, row + 1, col, check_only=True):
-                    legal_moves.append(((row, col), (row, col + 1)))
-                if Action(self).swap(row, col, row, col + 1, check_only=True):
-                    legal_moves.append(((row, col), (row + 1, col)))
+        for row in range(self.N):
+            for col in range(self.M):
+                if col < self.M - 1:  # Check horizontal swap
+                    if Action(self).swap(row, col, row, col + 1, check_only=True):
+                        legal_moves.append(((row, col), (row, col + 1)))
+                if row < self.N - 1:  # Check vertical swap
+                    if Action(self).swap(row, col, row + 1, col, check_only=True):
+                        legal_moves.append(((row, col), (row + 1, col)))
         return legal_moves
         
+    def scoring_function(self, match_length):
+        """
+        Define scoring based on match length.
+        """
+        return 100 + 300 * match_length ** 2 # Complètemet arbitraire for now
 
-
-
+    def display_move(self, move):
+        """
+        Display the board with the moved candies printed in red.
+        """
+        RED = '\033[91m'
+        END = '\033[0m'
+        
+        for i in range(self.N):
+            row_display = '|'
+            for j in range(self.M):
+                if (i, j) == move[0] or (i, j) == move[1]:
+                    row_display += RED + self.board[i, j] + END + ' '
+                else:
+                    row_display += self.board[i, j] + ' '
+            row_display = row_display.strip() + '|'
+            print(row_display)
+        print()
 
 UnitVectors = {
     'UP': (-1, 0),
