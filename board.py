@@ -133,7 +133,20 @@ class Board:
             self.fill_random() #Modifié pour fill que les cases vides
             updated = True
         return updated
+    
+    def get_legal_moves(self):
+        """
+        Get all legal moves on the board.
+        """
+        legal_moves = []
         
+        for row in range(self.N - 1):
+            for col in range(self.M - 1):
+                if Action(self).swap(row, col, row + 1, col, check_only=True):
+                    legal_moves.append(((row, col), (row, col + 1)))
+                if Action(self).swap(row, col, row, col + 1, check_only=True):
+                    legal_moves.append(((row, col), (row + 1, col)))
+        return legal_moves
         
 
 
@@ -161,7 +174,7 @@ class Action:
             raise ValueError("Can only swap adjacent candies.")
         self.board.board[row1, col1], self.board.board[row2, col2] = self.board.board[row2, col2], self.board.board[row1, col1]
         
-    def swap(self, row1, col1, row2, col2):
+    def swap(self, row1, col1, row2, col2, check_only=False):
         """
         Swap two candies on the board if the move is valid.
         """
@@ -207,5 +220,8 @@ class Action:
         if not ok_to_swap:
             self.raw_swap(row1, col1, row2, col2)
             return False
+        if check_only:
+            self.raw_swap(row1, col1, row2, col2)
         return True
+        
         
