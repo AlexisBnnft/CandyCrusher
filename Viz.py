@@ -7,13 +7,14 @@ import numpy as np
 
 class Viz:
 
-    def __init__(self, board: Board, action: Action):
+    def __init__(self, board: Board, action: Action, is_colloc: bool = False):
         """
         Initialize the Viz class with a board and an action.
         """
 
         self.board = board
         self.action = action
+        self.is_colloc = is_colloc
     
     def Visualize(self):
         """
@@ -37,7 +38,10 @@ class Viz:
         # Load candy images
         candy_images = []
         for i in range(1, 7):  # Assuming there are 10 types of candies
-            image = pygame.image.load(f'assets/candy_{i}.png')
+            if self.is_colloc:
+                image = pygame.image.load(f'assets/colloc/candy_{i}.png')
+            else:
+                image = pygame.image.load(f'assets/candy/candy_{i}.png')
             image = pygame.transform.scale(image, (int(width), int(height)))
             candy_images.append(image)
 
