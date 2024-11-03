@@ -443,6 +443,18 @@ class Board:
             self.score+=self.remove_piece(row, col)
         return len(matches)
     
+    def state(self):
+        """
+        Get the state of the board as a unique integer hash.
+        
+        Returns:
+            int: A unique integer representing the board state.
+        """
+        # Flatten the board and concatenate each cell's value into a single string
+        flattened = ''.join(str(cell) for row in self.board for cell in row)
+        return int(flattened)
+    
+
     def update(self,from_move=[],step_by_step=False,fall=[]):
         """
         Update the board by removing matches and filling empty spaces.
@@ -463,6 +475,24 @@ class Board:
             updated = True
         return updated
     
+    def get_from_state(state):
+        """
+        Create a board from a hashable state.
+        Args:
+            state (tuple): A tuple of tuples representing the board state.
+        Returns:
+            Board: A Board object with the given state.
+        """
+        N = len(state)
+        M = len(state[0])
+        board = Board(N, M)
+        for i in range(N):
+            for j in range(M):
+                if state[i][j] != ' ':
+                    board.add_piece(Candy(state[i][j]), i, j)
+        return board 
+
+
     def get_legal_moves(self):
         """
         Get all legal moves on the board.
@@ -500,6 +530,8 @@ class Board:
             row_display = row_display.strip() + '|'
             print(row_display)
         print()
+
+    
 
 UnitVectors = {
     'UP': (-1, 0),
