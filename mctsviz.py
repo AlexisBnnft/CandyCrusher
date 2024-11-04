@@ -26,9 +26,8 @@ def visualize_root_moves(mcts):
     # Add child nodes for each legal move
     for move in legal_moves:
         # Calculate mean reward for each legal move
-        total_reward = mcts.Q.get((root_state, move), 0)
         visit_count = mcts.N.get((root_state, move), 0)
-        mean_reward = total_reward / visit_count if visit_count > 0 else 0
+        mean_reward = mcts.Q.get((root_state, move), 0)
         mean_rewards.append(mean_reward)
 
         # Create label for each move

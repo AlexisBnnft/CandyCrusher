@@ -475,22 +475,24 @@ class Board:
             updated = True
         return updated
     
-    def get_from_state(state):
+    def from_state(state, rows, cols):
         """
-        Create a board from a hashable state.
+        Convert a unique integer hash back to the board state.
+        
         Args:
-            state (tuple): A tuple of tuples representing the board state.
+            state (int): The unique integer representing the board state.
+            rows (int): The number of rows in the board.
+            cols (int): The number of columns in the board.
+        
         Returns:
-            Board: A Board object with the given state.
+            list: The board represented as a list of lists.
         """
-        N = len(state)
-        M = len(state[0])
-        board = Board(N, M)
-        for i in range(N):
-            for j in range(M):
-                if state[i][j] != ' ':
-                    board.add_piece(Candy(state[i][j]), i, j)
-        return board 
+        state_str = str(state)
+        board = []
+        for i in range(rows):
+            row = [int(state_str[j]) for j in range(i * cols, (i + 1) * cols)]
+            board.append(row)
+        return board
 
 
     def get_legal_moves(self):
@@ -512,6 +514,7 @@ class Board:
         Define scoring based on match length.
         """
         return match_length # Complètemet arbitraire for now
+
 
     def display_move(self, move):
         """

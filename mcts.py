@@ -70,7 +70,7 @@ class MCTS_CandyCrush:
         legal_moves = self.root_board.get_legal_moves()
         best_action = max(
             legal_moves,
-            key=lambda move: self.Q.get((root_state, move), 0) / (self.N.get((root_state, move), 1))
+            key=lambda move: self.Q.get((root_state, move), 0)
         )
         self.logger.info(f"\nBest move selected: {best_action}")
         self.logger.info("\n--- Summary of States Visited ---")
@@ -78,7 +78,6 @@ class MCTS_CandyCrush:
             # Convert the state hash to hexadecimal (first 4 characters)
             self.logger.info(f"State {hex(state)[:6]} visited {visit_count} times")
 
-        return best_action
         return best_action
 
     def run_simulation(self):
@@ -117,7 +116,7 @@ class MCTS_CandyCrush:
         # Backpropagate reward
         for state, move in visited_state_actions:
             self.N[(state, move)] = self.N.get((state, move), 0) + 1
-            self.Q[(state, move)] = self.Q.get((state, move), 0) + reward
+            self.Q[(state, move)] = (self.Q.get((state, move), 0) * (self.N[(state, move)] - 1) + reward) / self.N[(state, move)]
             self.N_state[state] = self.N_state.get(state, 0) + 1
             self.logger.info(f"Updated Q[{hex(state)[:6]}, {move}] = {self.Q[(state, move)]}, N[{hex(state)[:6]}, {move}] = {self.N[(state, move)]}")
 
@@ -130,7 +129,7 @@ class MCTS_CandyCrush:
             visit_count = self.N.get((state, move), 0)
             if visit_count == 0:
                 return float('inf')  # Encourage exploration
-            return q_value / visit_count + self.exploration_param * math.sqrt(
+            return q_value + self.exploration_param * math.sqrt(
                 math.log(total_visits) / visit_count
             )
         
@@ -154,6 +153,6 @@ if __name__ == "__main__":
     # Display the mean reward for each possible move
     for move in b.get_legal_moves():
         state = b.state()
-        print(f"Mean reward for move {move}: {mcts.Q.get((state, move), 0) / (mcts.N.get((state, move), 1))}")
+        print(f"Mean reward for move {move}: {mcts.Q.get((state, move), 0)}")
     print(f"\nFinal best move from MCTS: {best_move}")
 
