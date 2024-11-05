@@ -37,7 +37,7 @@ class Viz:
 
         # Load candy images
         candy_images = []
-        for i in range(1, 7):  # Assuming there are 10 types of candies
+        for i in range(1, 8):  # Assuming there are 10 types of candies
             if self.is_colloc:
                 image = pygame.image.load(f'assets/colloc/candy_{i}.png')
             else:
@@ -75,22 +75,46 @@ class Viz:
                             clicked = True
                             break
             
+            display_action = False
             if clicked and keys[pygame.K_UP]:
                 if i_clicked - 1 >= 0:
-                    self.action.swap(i_clicked, j_clicked, i_clicked - 1, j_clicked)
+                    self.action.swap(i_clicked, j_clicked, i_clicked - 1, j_clicked, step_by_step=True)
                     clicked = False
+                    display_action = True
             if clicked and keys[pygame.K_DOWN]:
                 if i_clicked + 1 < self.board.N:
-                    self.action.swap(i_clicked, j_clicked, i_clicked + 1, j_clicked)
+                    self.action.swap(i_clicked, j_clicked, i_clicked + 1, j_clicked, step_by_step=True)
                     clicked = False
+                    display_action = True
             if clicked and keys[pygame.K_LEFT]:
                 if j_clicked - 1 >= 0:
-                    self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked - 1)
+                    self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked - 1, step_by_step=True)
                     clicked = False
+                    display_action = True
             if clicked and keys[pygame.K_RIGHT]:
                 if j_clicked + 1 < self.board.M:
-                    self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked + 1)
+                    self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked + 1, step_by_step=True)
                     clicked = False
+                    display_action = True
+
+            if display_action==False:
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked)
+                pygame.display.update()
+
+
+            while display_action:
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height)
+                pygame.display.update()
+                pygame.time.delay(1000)
+                self.board.make_it_fall()
+                self.board.fill_random()
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height)
+                pygame.display.update()
+                pygame.time.delay(1000)
+                display_action=self.board.update(step_by_step=True)
+
+            
+
             
             if keys[pygame.K_s]:
                 clicked = False
@@ -98,42 +122,41 @@ class Viz:
                 self.board.fill_random()
                 self.board.update()
 
-            win.fill((0, 0, 0))
-
-            for i in range(self.board.N):
-                for j in range(self.board.M):
-                    if self.board.board[i, j] != ' ':
-                        candy_index = int(self.board.board[i, j]) - 1
-                        if clicked and i == i_clicked and j == j_clicked:
-                            pygame.draw.rect(win, (255, 255, 255), (x_cases[j] - width / 2 - 2, y_cases[i] - height / 2 - 2, width + 4, height + 4))
-                        win.blit(candy_images[candy_index], (x_cases[j] - width / 2, y_cases[i] - height / 2))
-                    else:
-                        pygame.draw.circle(win, (250, 0, 0), (x_cases[j], y_cases[i]), 20)
+            
 
             pygame.display.update()
 
-            # 1 second pause
-
-            pygame.time.delay(500)
-
-            # Update board and display
-
-            self.board.update()
-
-            win.fill((0, 0, 0))
-
-            for i in range(self.board.N):
-                for j in range(self.board.M):
-                    if self.board.board[i, j] != ' ':
-                        candy_index = int(self.board.board[i, j]) - 1
-                        if clicked and i == i_clicked and j == j_clicked:
-                            pygame.draw.rect(win, (255, 255, 255), (x_cases[j] - width / 2 - 2, y_cases[i] - height / 2 - 2, width + 4, height + 4))
-                        win.blit(candy_images[candy_index], (x_cases[j] - width / 2, y_cases[i] - height / 2))
-                    else:
-                        pygame.draw.circle(win, (250, 0, 0), (x_cases[j], y_cases[i]), 20)
-
-            pygame.display.update()
+            
 
         pygame.display.quit()
         pygame.quit()
         sys.exit()
+
+
+    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0):
+
+        win.fill((0, 0, 0))
+
+        for i in range(self.board.N):
+            for j in range(self.board.M):
+                if self.board.board[i, j] != Candy(0,'empty'):
+                    candy_index = int(self.board.board[i, j].id) - 1
+                    candy_type = self.board.board[i, j].type
+                    if clicked and i == i_clicked and j == j_clicked:
+                        pygame.draw.rect(win, (255, 255, 255), (x_cases[j] - width / 2 - 2, y_cases[i] - height / 2 - 2, width + 4, height + 4))
+                    win.blit(candy_images[candy_index], (x_cases[j] - width / 2, y_cases[i] - height / 2))
+                    # Add horizontal stripes for raye_hor,raye_ver and sachet typed candies
+                    if candy_type == 'raye_hor':
+                        pygame.draw.line(win, (255, 255, 255), (x_cases[j] - width / 2, y_cases[i]), (x_cases[j] + width / 2, y_cases[i]), 2)
+                    if candy_type=='raye_ver':
+                        pygame.draw.line(win, (255, 255, 255), (x_cases[j], y_cases[i] - height / 2), (x_cases[j], y_cases[i] + height / 2), 2)
+                    if candy_type=='sachet':
+                        pygame.draw.rect(win, (255, 255, 255), (x_cases[j] - width / 4, y_cases[i] - height / 4, width / 2, height / 2), 2)
+                else:
+                    pygame.draw.circle(win, (250, 0, 0), (x_cases[j], y_cases[i]), 20)
+
+        # Display the score
+
+        font = pygame.font.Font(None, 36)
+        text = font.render(f"Score: {self.board.score}", True, (255, 255, 255))
+        win.blit(text, (10, 10))
