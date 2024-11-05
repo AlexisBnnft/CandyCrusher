@@ -134,7 +134,7 @@ class MCTS_CandyCrush:
             self.logger.info(current_board.display())
             current_score = current_board.score
             reward = self.run_simulation(current_board=current_board)
-            true_reward = current_board.score - current_score
+            true_reward = reward - current_score
             # Backpropagate reward
             self.N[(current_board.state(), init_move)] = self.N.get((current_board.state(), init_move), 0) + 1
             self.Q[(current_board.state(), init_move)] = (self.Q.get((current_board.state(), init_move), 0) * (self.N[(current_board.state(), init_move)] - 1) + true_reward) / self.N[(current_board.state(), init_move)]
@@ -172,7 +172,7 @@ if __name__ == "__main__":
     b.display()
     
     # Initialize the MCTS with the given board `b` and log output to a file
-    mcts = MCTS_CandyCrush(b, exploration_param=1.4, N_rollout=5, n_simulation=10000, no_log = False, write_log_file=True)
+    mcts = MCTS_CandyCrush(b, exploration_param=100000, N_rollout=5, n_simulation=10000, no_log = False, write_log_file=True)
     
     # Run MCTS to find the best move with step-by-step logs
     best_move = mcts.best_move()  # Adjust number of simulations if needed
