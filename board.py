@@ -18,6 +18,12 @@ class Board:
         self.M = M
         self.board = np.array([[Candy(0,'empty') for _ in range(M)] for _ in range(N)])
         self.score = 0
+    
+    def __eq__(self, value: object) -> bool:
+        """
+        Check if two boards are equal.
+        """
+        return np.all(self.board == value.board)
 
     def display(self):
         """
@@ -27,6 +33,16 @@ class Board:
         for row in viz_board:
             print('|' + ' '.join(row) + '|')
         print()
+
+    def display_with_type(self):
+        """
+        Display the current state of the board.
+        """
+        viz_board = np.array([[str(self.board[i, j]) + "_"+ str(TYPE_DISPLAY[self.board[i, j].type]) for j in range(self.M)] for i in range(self.N)])
+        for row in viz_board:
+            print('|' + ' '.join(row) + '|')
+        print()
+
 
     def empty(self):
         """
@@ -64,7 +80,6 @@ class Board:
                     recently_added.append((row, col))
         return recently_added
 
-    
     def add_piece(self, candy : Candy, row, col):
         """
         Add a candy to the board at the specified position.
@@ -483,15 +498,14 @@ class Action:
         """
         self.board = board
 
-    def raw_swap(self, row1, col1, row2, col2): # j'ai mis row1, col1, row2, col2 mais je pense qu'on peut faire position1, position2 peut être
+    def raw_swap(self, row1, col1, row2, col2):
         """
         Swap two candies on the board. This does not check for valid moves.
         """
         if abs(row1 - row2) > 1 or abs(col1 - col2) > 1:
             raise ValueError("Can only swap adjacent candies.")
         self.board.board[row1, col1], self.board.board[row2, col2] = self.board.board[row2, col2], self.board.board[row1, col1]
-        
-        
+            
     def swap(self, row1, col1, row2, col2, step_by_step=False):
         """
         Swap two candies on the board if the move is valid.

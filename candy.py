@@ -3,7 +3,7 @@ from numpy import *
 N_CANDY = 6 # Number of different candies
 NUM_DISCO = 7
 TYPES = {'normal','raye_hor','raye_ver','sachet','disco','empty'}
-
+TYPE_DISPLAY = {'normal':'N','raye_hor':'H','raye_ver':'V','sachet':'S','disco':'D','empty':'E'}
 class Candy:
     def __init__(self, id, type='normal'):
         self.id=id
