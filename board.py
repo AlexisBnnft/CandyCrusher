@@ -443,13 +443,12 @@ class Board:
             self.score+=self.remove_piece(row, col)
         return len(matches)
     
-    def update(self,from_move=[],step_by_step=False):
+    def update(self,from_move=[],step_by_step=False,fall=[]):
         """
         Update the board by removing matches and filling empty spaces.
         """
         updated = False
         from_move=from_move
-        fall=[]
         while self.remove_matches(fall=fall,from_move=from_move)!=False:
             if step_by_step:
                 return True

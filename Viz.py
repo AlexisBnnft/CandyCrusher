@@ -112,12 +112,13 @@ class Viz:
                 self.board_visual(candy_images,win,x_cases,width,y_cases,height)
                 pygame.display.update()
                 pygame.time.delay(1000)
-                self.board.make_it_fall()
-                self.board.fill_random()
+                fall1=self.board.make_it_fall()
+                fall2=self.board.fill_random()
+                fall=fall1+fall2
                 self.board_visual(candy_images,win,x_cases,width,y_cases,height)
                 pygame.display.update()
                 pygame.time.delay(1000)
-                display_action=self.board.update(step_by_step=True)
+                display_action=self.board.update(fall=fall,step_by_step=True)
 
             
 
