@@ -142,7 +142,7 @@ class TestBoard(unittest.TestCase):
         board.update()
         print()
         board.display()
-        assert board.board[1,3].type == "sachet"
+        assert board.board[2,3].type == "sachet"
 
 
         

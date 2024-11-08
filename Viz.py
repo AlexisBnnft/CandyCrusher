@@ -50,6 +50,8 @@ class Viz:
         j_clicked = -1
         clicked = False
 
+        board_copy = self.board.copy()
+
         while run:
             
             pygame.time.delay(50)
@@ -78,21 +80,25 @@ class Viz:
             display_action = False
             if clicked and keys[pygame.K_UP]:
                 if i_clicked - 1 >= 0:
+                    board_copy = self.board.copy()
                     self.action.swap(i_clicked, j_clicked, i_clicked - 1, j_clicked, step_by_step=True)
                     clicked = False
                     display_action = True
             if clicked and keys[pygame.K_DOWN]:
                 if i_clicked + 1 < self.board.N:
+                    board_copy = self.board.copy()
                     self.action.swap(i_clicked, j_clicked, i_clicked + 1, j_clicked, step_by_step=True)
                     clicked = False
                     display_action = True
             if clicked and keys[pygame.K_LEFT]:
                 if j_clicked - 1 >= 0:
+                    board_copy = self.board.copy()
                     self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked - 1, step_by_step=True)
                     clicked = False
                     display_action = True
             if clicked and keys[pygame.K_RIGHT]:
                 if j_clicked + 1 < self.board.M:
+                    board_copy = self.board.copy()
                     self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked + 1, step_by_step=True)
                     clicked = False
                     display_action = True
@@ -122,7 +128,14 @@ class Viz:
                 self.board.fill_random()
                 self.board.update()
 
-            
+            if keys[pygame.K_r]:
+                clicked = False
+                self.board = board_copy
+                self.action = Action(self.board)
+
+            if keys[pygame.K_c]:
+                self.save_board_to_file('study_board.txt')
+
 
             pygame.display.update()
 
@@ -160,3 +173,21 @@ class Viz:
         font = pygame.font.Font(None, 36)
         text = font.render(f"Score: {self.board.score}", True, (255, 255, 255))
         win.blit(text, (10, 10))
+
+
+
+    def save_board_to_file(self, file_path):
+        """
+        Save the current board to a text file.
+        """
+        with open(file_path, 'w') as file:
+            # Write the board dimensions
+            file.write(f"{self.board.N} {self.board.M}\n")
+            
+            # Write the board state
+            for i in range(self.board.N):
+                row = []
+                for j in range(self.board.M):
+                    candy = self.board.board[i, j]
+                    row.append(f"{candy.id}_{candy.type}")
+                file.write(' '.join(row) + '\n')

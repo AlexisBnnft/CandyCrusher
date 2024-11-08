@@ -93,6 +93,7 @@ class Board:
         """
         Make candies fall down to fill empty spaces.
         """
+        fall=[]
         for col in range(self.M):
             for row in range(self.N-1, -1, -1):
                 if self.board[row, col] == Candy(0,'empty'):
@@ -100,7 +101,9 @@ class Board:
                         if self.board[r, col] != Candy(0,'empty'):
                             self.board[row, col] = self.board[r, col]
                             self.board[r, col] = Candy(0,'empty')
+                            fall.append((row, col))
                             break
+        return fall
 
     def check_if_merged_all(self,fall=[],from_move=[]):
         """
@@ -194,6 +197,9 @@ class Board:
                     self.board[row1,col1].type='normal'
                     self.board[row2,col2].type='normal'
                     for i in range(max(0,row1-1),min(self.N,row1+2)):
+                        for j in range(self.M):
+                            matches.append((i,j))
+                    for i in range(self.N):
                         for j in range(max(0,col1-1),min(self.M,col1+2)):
                             matches.append((i,j))
                     return matches
@@ -203,6 +209,9 @@ class Board:
                     self.board[row2,col2].type='normal'
                     # Same as one sachet pop but with rows that are from +2 to -2 and cols that are from +2 to -2
                     for i in range(max(0,row1-2),min(self.N,row1+2)):
+                        for j in range(self.M):
+                            matches.append((i,j))
+                    for i in range(self.N):
                         for j in range(max(0,col1-2),min(self.M,col1+2)):
                             matches.append((i,j))
                     return matches
@@ -230,7 +239,7 @@ class Board:
                         one_already_transformed=False
                         if match_length==4: # Add raye
                             for i in range(match_length):
-                                if (row_study, col_study + i) in recently_added and not one_already_transformed:
+                                if (row_study, col_study + i) in recently_added and not one_already_transformed and self.board[row_study, col_study + i].type=='normal':
                                     self.board[row_study, col_study + i].type='raye_ver'
                                     new_type.append((row_study, col_study + i))
                                     one_already_transformed=True
@@ -238,7 +247,7 @@ class Board:
                                     matches.append(((row_study, col_study + i)))
                         elif match_length>=5: # Add disco
                             for i in range(match_length):
-                                if (row_study, col_study + i) in recently_added and not one_already_transformed:
+                                if (row_study, col_study + i) in recently_added and not one_already_transformed and self.board[row_study, col_study + i].type=='normal':
                                     self.board[row_study, col_study + i].type='disco'
                                     self.board[row_study, col_study + i].id=NUM_DISCO
                                     new_type.append((row_study, col_study + i))
@@ -248,15 +257,23 @@ class Board:
 
                         for i in range(match_length):
                             matches.append(((row_study, col_study + i)))
-                            #Check each column for sachet (Lshape or Tshape)
+                            #Check each column for sachet (Lshape or Tshape) up and down
                             sachet_match_lenght=1
-                            while row_study + sachet_match_lenght < self.N and self.board[row_study + sachet_match_lenght, col_study + i] == self.board[row_study, col_study + i]:
-                                sachet_match_lenght += 1
-                                if sachet_match_lenght==3:
-                                    already_visited.append((row_study+1, col_study + i))
-                                if sachet_match_lenght>=3:
-                                    already_visited.append((row_study+sachet_match_lenght, col_study + i))
+                            up=1
+                            down=1
+                            while row_study + down < self.N and self.board[row_study + down, col_study + i] == self.board[row_study, col_study + i]:
+                                down += 1
+                                sachet_match_lenght+=1
+                            while row_study - up >= 0 and self.board[row_study - up, col_study + i] == self.board[row_study, col_study + i]:
+                                up += 1
+                                sachet_match_lenght+=1
                             if sachet_match_lenght>=3:
+                                for u in range (up):
+                                    already_visited.append((row_study - u, col_study + i))
+                                    matches.append(((row_study - u, col_study + i)))
+                                for d in range (down):
+                                    already_visited.append((row_study + d, col_study + i))
+                                    matches.append(((row_study + d, col_study + i)))
                                 if (row_study, col_study + i) in recently_added:
                                     self.board[row_study, col_study + i].type='sachet'
                                     new_type.append((row_study, col_study + i))
@@ -274,7 +291,7 @@ class Board:
                         one_already_transformed=False
                         if match_length2==4:
                             for i in range(match_length2):
-                                if (row_study + i, col_study) in recently_added and not one_already_transformed:
+                                if (row_study + i, col_study) in recently_added and not one_already_transformed and self.board[row_study + i, col_study].type=='normal':
                                     self.board[row_study + i, col_study].type='raye_hor'
                                     new_type.append((row_study + i, col_study))
                                     one_already_transformed=True
@@ -282,7 +299,7 @@ class Board:
                                     matches.append(((row_study + i, col_study)))
                         elif match_length2>=5:
                             for i in range(match_length2):
-                                if (row_study + i, col_study) in recently_added and not one_already_transformed:
+                                if (row_study + i, col_study) in recently_added and not one_already_transformed and self.board[row_study + i, col_study].type=='normal':
                                     self.board[row_study + i, col_study].type='disco'
                                     self.board[row_study + i, col_study].id=NUM_DISCO
                                     new_type.append((row_study + i, col_study))
@@ -292,7 +309,7 @@ class Board:
 
                         for i in range(match_length2):
                             matches.append(((row_study + i, col_study)))
-                            #Check each row for sachet (Lshape or Tshape)
+                            #Check each row for sachet (Lshape or Tshape) only checking right
                             sachet_match_lenght=1
                             while col_study + sachet_match_lenght < self.M and self.board[row_study + i, col_study + sachet_match_lenght] == self.board[row_study + i, col_study]:
                                 sachet_match_lenght += 1
@@ -436,8 +453,9 @@ class Board:
         while self.remove_matches(fall=fall,from_move=from_move)!=False:
             if step_by_step:
                 return True
-            self.make_it_fall()
-            fall=self.fill_random()
+            fall1=self.make_it_fall()
+            fall2=self.fill_random()
+            fall=fall1+fall2
             from_move=[]
             updated = True
         if len(self.get_legal_moves()) == 0:
