@@ -219,9 +219,6 @@ class Board:
                     self.board[row2,col2].type='normal'
                     # Same as one sachet pop but with rows that are from +2 to -2 and cols that are from +2 to -2
                     for i in range(max([0,row1-2]),min([self.N,row1+3])):
-                        for j in range(self.M):
-                            matches.append((i,j))
-                    for i in range(self.N):
                         for j in range(max([0,col1-2]),min([self.M,col1+3])):
                             matches.append((i,j))
                     return matches
@@ -441,6 +438,7 @@ class Board:
                 for j in range(self.M):
                     if self.board[i, j].id==id_rand:
                         count+=self.remove_piece(i, j)
+            return count
 
 
     def remove_matches(self,fall=[],from_move=[]):

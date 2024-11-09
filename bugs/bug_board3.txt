@@ -1,0 +1,11 @@
+10 10
+1_normal 5_normal 1_normal 4_normal 5_normal 4_normal 1_normal 2_normal 5_normal 1_normal
+5_normal 2_normal 3_normal 2_normal 5_normal 3_normal 1_normal 2_normal 4_normal 6_normal
+6_normal 1_normal 2_normal 5_normal 6_normal 6_normal 3_normal 5_normal 6_normal 5_normal
+3_normal 5_normal 2_normal 6_normal 1_normal 1_normal 4_normal 5_normal 4_normal 3_normal
+5_normal 1_normal 1_raye_ver 5_normal 2_normal 5_normal 3_normal 1_normal 2_normal 4_normal
+2_normal 3_sachet 1_normal 1_normal 5_raye_hor 3_normal 4_normal 2_normal 4_normal 3_normal
+5_raye_ver 2_normal 5_normal 3_normal 2_normal 2_normal 1_normal 1_normal 4_normal 4_normal
+3_normal 4_normal 3_normal 1_normal 4_normal 5_normal 1_normal 4_normal 5_normal 1_normal
+2_normal 4_normal 3_normal 3_normal 2_normal 3_normal 4_normal 3_normal 4_normal 5_normal
+4_normal 2_normal 7_disco 2_normal 2_normal 5_normal 4_normal 3_normal 1_normal 2_normal

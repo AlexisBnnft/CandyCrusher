@@ -100,21 +100,8 @@ class MCTS_CandyCrush:
             move = self.select_move(state, legal_moves)
             self.logger.info(f"Selected move: {move}")
             visited_state_actions.append((state, move))
-            current_board.display_with_type()
-            if not current_board.is_full():
-                print("Board is not full")
-                current_board.display()
             # Apply the move
-            try:
-                Action(current_board).swap(*move[0], *move[1])
-            except Exception as e:
-                self.logger.info(f"Error: {e}")
-                self.logger.info("the swap is the following:")
-                print("An error occured on board:")
-                current_board.display()
-                print(f"Action(current_board).swap({move[0][0]},{move[0][1]},{move[1][0]},{move[1][1]})")
-                self.logger.info("Ending simulation.")
-                break
+            Action(current_board).swap(*move[0], *move[1])
             current_board.update()
             self.logger.info(f"New board state after move: {hex(current_board.state())[:6]}, Score: {current_board.score}")
             
