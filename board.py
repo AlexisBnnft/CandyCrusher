@@ -198,19 +198,19 @@ class Board:
                 elif self.board[row1, col1].type in {'raye_ver','raye_hor'} and self.board[row2, col2].type=='sachet':
                     self.board[row1,col1].type='normal'
                     self.board[row2,col2].type='normal'
-                    for i in range(max(0,row2-1),min(self.N,row2+2)):
-                        for j in range(max(0,col2-1),min(self.M,col2+2)):
+                    for i in range(max([0,row2-1]),min([self.N,row2+2])):
+                        for j in range(max([0,col2-1]),min([self.M,col2+2])):
                             matches.append((i,j))
                     return matches
                 
                 elif self.board[row1, col1].type=='sachet' and self.board[row2, col2].type in {'raye_ver','raye_hor'}:
                     self.board[row1,col1].type='normal'
                     self.board[row2,col2].type='normal'
-                    for i in range(max(0,row1-1),min(self.N,row1+2)):
+                    for i in range(max([0,row1-1]),min([self.N,row1+2])):
                         for j in range(self.M):
                             matches.append((i,j))
                     for i in range(self.N):
-                        for j in range(max(0,col1-1),min(self.M,col1+2)):
+                        for j in range(max([0,col1-1]),min([self.M,col1+2])):
                             matches.append((i,j))
                     return matches
 
@@ -218,11 +218,11 @@ class Board:
                     self.board[row1,col1].type='normal'
                     self.board[row2,col2].type='normal'
                     # Same as one sachet pop but with rows that are from +2 to -2 and cols that are from +2 to -2
-                    for i in range(max(0,row1-2),min(self.N,row1+2)):
+                    for i in range(max([0,row1-2]),min([self.N,row1+3])):
                         for j in range(self.M):
                             matches.append((i,j))
                     for i in range(self.N):
-                        for j in range(max(0,col1-2),min(self.M,col1+2)):
+                        for j in range(max([0,col1-2]),min([self.M,col1+3])):
                             matches.append((i,j))
                     return matches
 
@@ -427,8 +427,9 @@ class Board:
             ### A modifier pour double pop
             self.remove_piece(row, col,force_remove=True)
             count=1
-            for i in range(max(0,row-1),min(self.N,row+2)):
-                for j in range(max(0,col-1),min(self.M,col+2)):
+            
+            for i in range(max([0,row-1]),min([self.N,row+2])):
+                for j in range(max([0,col-1]),min([self.M,col+2])):
                     count+=self.remove_piece(i, j)
             return count
         elif self.board[row, col].type=='disco':
