@@ -74,6 +74,7 @@ class Viz:
                 run = False
 
             if keys[pygame.K_w]:
+                pygame.time.delay(50)
                 time_delay = 100 if time_delay == 500 else 500
 
             if keys[pygame.K_m]:
@@ -102,6 +103,7 @@ class Viz:
                 self.board.update()
 
             if keys[pygame.K_ESCAPE]:  # Press Escape to show popup
+                pygame.time.delay(50)
                 if screenwidth == 1000:
                     screenwidth = 800
                 else:
@@ -276,14 +278,14 @@ class Viz:
             win.blit(shortcut_text, (x_menu, y_menu+180))
             shortcut_text = font.render(f"S: Empty the board", True, (255, 255, 255))
             win.blit(shortcut_text, (x_menu, y_menu+210))
-            shortcut_text = font.render(f"R: Reset the board", True, (255, 255, 255))
+            shortcut_text = font.render(f"R: Return to previous board", True, (255, 255, 255))
             win.blit(shortcut_text, (x_menu, y_menu+240))
             shortcut_text = font.render(f"C: Copy the board", True, (255, 255, 255))
             win.blit(shortcut_text, (x_menu, y_menu+270))
             shortcut_text = font.render(f"V: Paste the board", True, (255, 255, 255))
-            win.blit(shortcut_text, (x_menu, y_menu+270))
-            shortcut_text = font.render(f"Arrows: Move the candy", True, (255, 255, 255))
             win.blit(shortcut_text, (x_menu, y_menu+300))
+            shortcut_text = font.render(f"Arrows: Move the candy", True, (255, 255, 255))
+            win.blit(shortcut_text, (x_menu, y_menu+330))
 
 
         # Display the score
@@ -301,7 +303,7 @@ class Viz:
         """
         with open(file_path, 'w') as file:
             # Write the board dimensions
-            file.write(f"{self.board.N} {self.board.M}\n")
+            file.write(f"{self.board.N} {self.board.M} {self.board.score}\n")
             
             # Write the board state
             for i in range(self.board.N):

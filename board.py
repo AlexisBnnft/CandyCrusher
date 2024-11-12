@@ -560,12 +560,13 @@ def read_board_from_file(file_path):
         lines = file.readlines()
 
     # Extract board dimensions from the first line
-    dimensions = lines[0].strip().split(' ')
-    N = int(dimensions[0])
-    M = int(dimensions[1])
-
+    dimensions_and_score = lines[0].strip().split(' ')
+    N = int(dimensions_and_score[0])
+    M = int(dimensions_and_score[1])
+    score = int(dimensions_and_score[2])
     # Initialize the board
     board = Board(N, M)
+    board.score = score
 
     # Read the board state from the file
     for i in range(1, N + 1):
