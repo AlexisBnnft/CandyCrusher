@@ -142,7 +142,9 @@ class Board:
                             matches.append((i, j))
                 self.board[row1, col1].id=np.random.randint(1, N_CANDY + 1)
                 self.board[row1, col1].type='normal'
+                self.score+=5000
                 matches.append((row1, col1))
+
                 return matches
             
             if self.board[row1, col1].type=='normal' and self.board[row2, col2].type=='disco':
@@ -152,7 +154,9 @@ class Board:
                             matches.append((i, j))
                 self.board[row2, col2].id=np.random.randint(1, N_CANDY + 1)
                 self.board[row2, col2].type='normal'
+                self.score+=5000
                 matches.append((row2, col2))
+
                 return matches
 
 
@@ -166,6 +170,7 @@ class Board:
                     self.board[row1, col1].type='normal'
                     self.board[row2, col2].id=np.random.randint(1, N_CANDY + 1)
                     self.board[row2, col2].type='normal'
+                    self.score+=10000
                     return matches
 
                 elif self.board[row1, col1].type=='disco' and self.board[row2, col2].type in {'raye_ver','raye_hor','sachet'}:
@@ -176,6 +181,7 @@ class Board:
                                 matches.append((i, j))
                     self.board[row1, col1].id=np.random.randint(1, N_CANDY + 1)
                     self.board[row1, col1].type='normal'
+                    self.score+=5000
                     matches.append((row1, col1))
                     return matches
                 elif self.board[row1, col1].type in {'raye_ver','raye_hor','sachet'} and self.board[row2, col2].type=='disco':
@@ -186,6 +192,7 @@ class Board:
                                 matches.append((i, j))
                     self.board[row2, col2].id=np.random.randint(1, N_CANDY + 1)
                     self.board[row2, col2].type='normal'
+                    self.score+=5000
                     matches.append((row2, col2))
                     return matches
                 
@@ -198,16 +205,22 @@ class Board:
                 elif self.board[row1, col1].type in {'raye_ver','raye_hor'} and self.board[row2, col2].type=='sachet':
                     self.board[row1,col1].type='normal'
                     self.board[row2,col2].type='normal'
-                    for i in range(max([0,row2-1]),min([self.N,row2+2])):
-                        for j in range(max([0,col2-1]),min([self.M,col2+2])):
+                    for i in range(max([0,row1-1]),min([self.N,row1+2])):
+                        for j in range(self.M):
+                            matches.append((i,j))
+                    for i in range(self.N):
+                        for j in range(max([0,col1-1]),min([self.M,col1+2])):
                             matches.append((i,j))
                     return matches
-                
+
                 elif self.board[row1, col1].type=='sachet' and self.board[row2, col2].type in {'raye_ver','raye_hor'}:
                     self.board[row1,col1].type='normal'
                     self.board[row2,col2].type='normal'
-                    for i in range(max([0,row2-1]),min([self.N,row2+2])):
-                        for j in range(max([0,col2-1]),min([self.M,col2+2])):
+                    for i in range(max([0,row1-1]),min([self.N,row1+2])):
+                        for j in range(self.M):
+                            matches.append((i,j))
+                    for i in range(self.N):
+                        for j in range(max([0,col1-1]),min([self.M,col1+2])):
                             matches.append((i,j))
                     return matches
 

@@ -59,7 +59,7 @@ class MCTS_CandyCrush:
         return logger
 
 
-    def best_move(self):
+    def best_move(self, return_all = False):
         """Runs simulations to find the best move from the root state."""
         for i in range(self.n_simulation):
             self.logger.info(f"\n--- Simulation {i + 1} ---")
@@ -77,8 +77,19 @@ class MCTS_CandyCrush:
         for state, visit_count in self.N_state.items():
             # Convert the state hash to hexadecimal (first 4 characters)
             self.logger.info(f"State {hex(state)[:6]} visited {visit_count} times")
+        if not return_all:
+            return best_action
+        else:
+            all_moves_info = []
+            for move in legal_moves:
+                visits = self.N.get((root_state, move), 0)
+                mean_reward = self.Q.get((root_state, move), 0)
+                all_moves_info.append((move, visits, mean_reward))
+            return best_action, all_moves_info
 
-        return best_action
+    
+
+
 
     def run_simulation(self):
         """Simulates a game sequence from the root state."""

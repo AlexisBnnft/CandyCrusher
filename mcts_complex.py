@@ -4,6 +4,7 @@ import logging
 from copy import deepcopy
 from board import Action, Board
 import numpy as np
+from tqdm import tqdm
 
 class MCTS_CandyCrush_Complex:
     def __init__(self, board, exploration_param=1.4, N_rollout=5, n_simulation=100, no_log = True, write_log_file = False):
@@ -60,9 +61,9 @@ class MCTS_CandyCrush_Complex:
         return logger
 
 
-    def best_move(self):
+    def best_move(self, return_all = False):
         """Runs simulations to find the best move from the root state."""
-        for i in range(self.n_simulation):
+        for i in tqdm(range(self.n_simulation)):
             self.logger.info(f"\n--- Simulation {i + 1} ---")
             self.run_simulation()
 
@@ -82,7 +83,15 @@ class MCTS_CandyCrush_Complex:
             # Convert the state hash to hexadecimal (first 4 characters)
             self.logger.info(f"State {hex(state)} visited {visit_count} times")
 
-        return best_action
+        if not return_all:
+            return best_action
+        else:
+            all_moves_info = []
+            for move in legal_moves:
+                visits = self.N.get((root_state, move), 0)
+                mean_reward = self.Q.get((root_state, move), 0)
+                all_moves_info.append((move, visits, mean_reward))
+            return best_action, all_moves_info
 
     def run_simulation(self, current_board=None):
         """Simulates a game sequence from the root state."""
@@ -103,7 +112,6 @@ class MCTS_CandyCrush_Complex:
             self.logger.info("State has not been visited before. Running random rollout, but saving it for future.")
             # Expansion
             self.N_state[current_board.state()] = 1
-
             depth = 0
             while depth < self.N_rollout:
                 legal_moves = current_board.get_legal_moves()

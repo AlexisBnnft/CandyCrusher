@@ -6,6 +6,8 @@ import pygame
 import sys
 import numpy as np
 from mcts import MCTS_CandyCrush
+from mcts_complex import MCTS_CandyCrush_Complex
+from tqdm import tqdm
 
 class Viz:
 
@@ -27,7 +29,7 @@ class Viz:
 
         screenwidth = 800
         screenheight = 800
-
+        time_delay = 100
         win = pygame.display.set_mode((screenwidth, screenheight))
         pygame.display.set_caption("Candy Crush (official version)")
 
@@ -53,9 +55,9 @@ class Viz:
         clicked = False
         highlight_move = False
         best_move = None
-
+        mcts = None
         board_copy = self.board.copy()
-
+        all_move = None
         while run:
             
             pygame.time.delay(50)
@@ -69,9 +71,13 @@ class Viz:
             if keys[pygame.K_q]:
                 run = False
 
+            if keys[pygame.K_w]:
+                time_delay = 100 if time_delay == 500 else 500
+
             if keys[pygame.K_m]:
-                mcts = MCTS_CandyCrush(self.board, exploration_param=1000, max_depth=5, n_simulation=300, no_log = True, write_log_file = False)
-                best_move = mcts.best_move()
+                clicked = False
+                mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=5000, N_rollout=4, n_simulation=500*5*2, no_log = True, write_log_file = False)
+                best_move, all_move = mcts.best_move(return_all=True)
                 highlight_move = True
 
             if keys[pygame.K_u]:
@@ -80,10 +86,18 @@ class Viz:
             if clicked:
                 for i in range(N_CANDY):
                     if keys[pygame.K_1 + i] or keys[pygame.K_KP1 + i]:
-                        prev_type=self.board.board[i_clicked, j_clicked].type
-                        self.board.board[i_clicked, j_clicked] = Candy(i + 1, prev_type)
-                        clicked = False
+                        self.board.board[i_clicked, j_clicked] = Candy(i + 1, 'normal')
                         break
+                if keys[pygame.K_1 + 6]:
+                    self.board.board[i_clicked, j_clicked] = Candy(7, 'disco')
+                if keys[pygame.K_1 + 7]:
+                    self.board.board[i_clicked, j_clicked] = Candy(np.random.randint(1, N_CANDY), 'sachet')
+                if keys[pygame.K_1 + 8]:
+                    self.board.board[i_clicked, j_clicked] = Candy(np.random.randint(1, N_CANDY), 'raye_hor')
+                if keys[pygame.K_0]:
+                    self.board.board[i_clicked, j_clicked] = Candy(np.random.randint(1, N_CANDY), 'raye_ver')
+                
+                all_move = None
 
             
             # Get where the mouse clicked
@@ -106,6 +120,7 @@ class Viz:
                     clicked = False
                     display_action = True
                     highlight_move = False
+                    all_move = None
             if clicked and keys[pygame.K_DOWN]:
                 if i_clicked + 1 < self.board.N:
                     board_copy = self.board.copy()
@@ -113,6 +128,7 @@ class Viz:
                     clicked = False
                     display_action = True
                     highlight_move = False
+                    all_move = None
             if clicked and keys[pygame.K_LEFT]:
                 if j_clicked - 1 >= 0:
                     board_copy = self.board.copy()
@@ -120,6 +136,7 @@ class Viz:
                     clicked = False
                     display_action = True
                     highlight_move = False
+                    all_move = None
             if clicked and keys[pygame.K_RIGHT]:
                 if j_clicked + 1 < self.board.M:
                     board_copy = self.board.copy()
@@ -127,22 +144,23 @@ class Viz:
                     clicked = False
                     display_action = True
                     highlight_move = False
+                    all_move = None
 
             if display_action==False:
-                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked,highlight_move,best_move)
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move)
                 pygame.display.update()
 
 
             while display_action:
                 self.board_visual(candy_images,win,x_cases,width,y_cases,height)
                 pygame.display.update()
-                pygame.time.delay(1000)
+                pygame.time.delay(time_delay)
                 fall1=self.board.make_it_fall()
                 fall2=self.board.fill_random()
                 fall=fall1+fall2
                 self.board_visual(candy_images,win,x_cases,width,y_cases,height)
                 pygame.display.update()
-                pygame.time.delay(1000)
+                pygame.time.delay(time_delay)
                 display_action=self.board.update(fall=fall,step_by_step=True)
 
             
@@ -153,6 +171,7 @@ class Viz:
                 self.board.empty()
                 self.board.fill_random()
                 self.board.update()
+                self.board.score = 0 # Et non mon grand !
 
             if keys[pygame.K_r]:
                 clicked = False
@@ -172,7 +191,7 @@ class Viz:
         sys.exit()
 
 
-    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None):
+    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None, all_move = None):
 
         win.fill((0, 0, 0))
 
@@ -199,6 +218,20 @@ class Viz:
                         pygame.draw.rect(win, (255, 255, 255), (x_cases[j] - width / 4, y_cases[i] - height / 4, width / 2, height / 2), 2)
                 else:
                     pygame.draw.circle(win, (250, 0, 0), (x_cases[j], y_cases[i]), 20)
+
+        if all_move is not None:    
+            for move, visits, mean_reward in all_move:
+                i1, j1 = move[0]
+                i2, j2 = move[1]
+                # Write as a text the number of visits and the mean reward
+                font = pygame.font.Font(None, 18)
+                text1 = font.render(f"N: {visits}", True, (255, 255, 255))
+                middle_x = (x_cases[j1] + x_cases[j2]) / 2
+                middle_y = (y_cases[i1] + y_cases[i2]) / 2
+                win.blit(text1, (middle_x-20, middle_y - 10))
+                text2 = font.render(f"Q: {mean_reward/100:.1f}", True, (255, 255, 255))
+                win.blit(text2, (middle_x-20, middle_y + 10))
+                
 
 
         # Display the score
