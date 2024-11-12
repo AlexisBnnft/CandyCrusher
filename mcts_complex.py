@@ -5,7 +5,7 @@ from copy import deepcopy
 from board import Action, Board
 import numpy as np
 
-class MCTS_CandyCrush:
+class MCTS_CandyCrush_Complex:
     def __init__(self, board, exploration_param=1.4, N_rollout=5, n_simulation=100, no_log = True, write_log_file = False):
         """
         Initialize the MCTS with the given parameters.
@@ -132,6 +132,7 @@ class MCTS_CandyCrush:
         else:
             self.logger.info("State has been visited before. Running simulation.")
             self.logger.info(current_board.display())
+
             current_score = current_board.score
             reward = self.run_simulation(current_board=current_board)
             true_reward = reward - current_score
@@ -169,7 +170,6 @@ if __name__ == "__main__":
     b = Board(7, 7)
     b.fill_random()
     b.update()
-    b.display()
     
     # Initialize the MCTS with the given board `b` and log output to a file
     mcts = MCTS_CandyCrush(b, exploration_param=100000, N_rollout=5, n_simulation=10000, no_log = False, write_log_file=True)

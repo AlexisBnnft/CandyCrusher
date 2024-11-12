@@ -206,11 +206,8 @@ class Board:
                 elif self.board[row1, col1].type=='sachet' and self.board[row2, col2].type in {'raye_ver','raye_hor'}:
                     self.board[row1,col1].type='normal'
                     self.board[row2,col2].type='normal'
-                    for i in range(max([0,row1-1]),min([self.N,row1+2])):
-                        for j in range(self.M):
-                            matches.append((i,j))
-                    for i in range(self.N):
-                        for j in range(max([0,col1-1]),min([self.M,col1+2])):
+                    for i in range(max([0,row2-1]),min([self.N,row2+2])):
+                        for j in range(max([0,col2-1]),min([self.M,col2+2])):
                             matches.append((i,j))
                     return matches
 
