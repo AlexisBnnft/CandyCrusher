@@ -139,7 +139,7 @@ class MCTS_CandyCrush_Complex:
         # If the new state has been visited before, run a simulation
         else:
             self.logger.info("State has been visited before. Running simulation.")
-            self.logger.info(current_board.display())
+            #self.logger.info(current_board.display())
 
             current_score = current_board.score
             reward = self.run_simulation(current_board=current_board)

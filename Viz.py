@@ -1,5 +1,5 @@
 
-from board import Board, Action
+from board import Board, Action,read_board_from_file
 from candy import Candy
 from candy import N_CANDY
 import pygame
@@ -8,6 +8,7 @@ import numpy as np
 from mcts import MCTS_CandyCrush
 from mcts_complex import MCTS_CandyCrush_Complex
 from tqdm import tqdm
+
 
 class Viz:
 
@@ -58,6 +59,7 @@ class Viz:
         mcts = None
         board_copy = self.board.copy()
         all_move = None
+        visible_menu = False
         while run:
             
             pygame.time.delay(50)
@@ -79,9 +81,35 @@ class Viz:
                 mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=5000, N_rollout=4, n_simulation=500*5*2, no_log = True, write_log_file = False)
                 best_move, all_move = mcts.best_move(return_all=True)
                 highlight_move = True
+            
+
+            if keys[pygame.K_c]:
+                # Copy the given board to a file
+                self.save_board_to_file('copied_board.txt')
+            
+            if keys[pygame.K_v]:
+                # Paste the board from the file
+                board = read_board_from_file('copied_board.txt')
+                self.board = board
+                self.action = Action(self.board)
+                board_copy = self.board.copy()
+                clicked = False
+                highlight_move = False
+                all_move = None
+
 
             if keys[pygame.K_u]:
                 self.board.update()
+
+            if keys[pygame.K_ESCAPE]:  # Press Escape to show popup
+                if screenwidth == 1000:
+                    screenwidth = 800
+                else:
+                    screenwidth = 1000
+                    visible_menu = True
+                win = pygame.display.set_mode((screenwidth, screenheight))
+        
+
 
             if clicked:
                 for i in range(N_CANDY):
@@ -147,7 +175,7 @@ class Viz:
                     all_move = None
 
             if display_action==False:
-                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move)
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move, visible_menu,time_delay)
                 pygame.display.update()
 
 
@@ -178,9 +206,6 @@ class Viz:
                 self.board = board_copy
                 self.action = Action(self.board)
 
-            if keys[pygame.K_c]:
-                self.save_board_to_file('study_board.txt')
-
 
             pygame.display.update()
 
@@ -191,7 +216,7 @@ class Viz:
         sys.exit()
 
 
-    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None, all_move = None):
+    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None, all_move = None, visible_menu = False, time_delay=None):
 
         win.fill((0, 0, 0))
 
@@ -231,7 +256,34 @@ class Viz:
                 win.blit(text1, (middle_x-20, middle_y - 10))
                 text2 = font.render(f"Q: {mean_reward/100:.1f}", True, (255, 255, 255))
                 win.blit(text2, (middle_x-20, middle_y + 10))
-                
+        
+        if visible_menu:
+            x_menu = 800
+            y_menu = 20
+            font = pygame.font.Font(None, 24)
+            menu_text_1 = font.render(f"Speed (change with W)", True, (255, 255, 255))
+            win.blit(menu_text_1, (x_menu, y_menu))
+            menu_text_2 = font.render(f"{time_delay}", True, (255, 255, 255))
+            win.blit(menu_text_2, (x_menu, y_menu+30))
+
+            shortcut_text = font.render(f"Shortcuts:", True, (255, 255, 255))
+            win.blit(shortcut_text, (x_menu, y_menu+90))
+            shortcut_text = font.render(f"M: Run MCTS", True, (255, 255, 255))
+            win.blit(shortcut_text, (x_menu, y_menu+120))
+            shortcut_text = font.render(f"U: Update the board", True, (255, 255, 255))
+            win.blit(shortcut_text, (x_menu, y_menu+150))
+            shortcut_text = font.render(f"ESC: Show/hide menu", True, (255, 255, 255))
+            win.blit(shortcut_text, (x_menu, y_menu+180))
+            shortcut_text = font.render(f"S: Empty the board", True, (255, 255, 255))
+            win.blit(shortcut_text, (x_menu, y_menu+210))
+            shortcut_text = font.render(f"R: Reset the board", True, (255, 255, 255))
+            win.blit(shortcut_text, (x_menu, y_menu+240))
+            shortcut_text = font.render(f"C: Copy the board", True, (255, 255, 255))
+            win.blit(shortcut_text, (x_menu, y_menu+270))
+            shortcut_text = font.render(f"V: Paste the board", True, (255, 255, 255))
+            win.blit(shortcut_text, (x_menu, y_menu+270))
+            shortcut_text = font.render(f"Arrows: Move the candy", True, (255, 255, 255))
+            win.blit(shortcut_text, (x_menu, y_menu+300))
 
 
         # Display the score
@@ -239,6 +291,7 @@ class Viz:
         font = pygame.font.Font(None, 36)
         text = font.render(f"Score: {self.board.score}", True, (255, 255, 255))
         win.blit(text, (10, 10))
+
 
 
 

@@ -551,4 +551,27 @@ class Action:
             return True
         return False
         
-        
+   
+def read_board_from_file(file_path):
+    """
+    Read a board from a text file and return the corresponding Board object.
+    """
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    # Extract board dimensions from the first line
+    dimensions = lines[0].strip().split(' ')
+    N = int(dimensions[0])
+    M = int(dimensions[1])
+
+    # Initialize the board
+    board = Board(N, M)
+
+    # Read the board state from the file
+    for i in range(1, N + 1):
+        line = lines[i].strip().split(' ')
+        for j in range(M):
+            candy_id, candy_type = line[j].split('_',1)
+            board.board[i - 1, j] = Candy(int(candy_id), candy_type)
+
+    return board
