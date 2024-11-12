@@ -4,6 +4,7 @@ from candy import Candy
 import pygame
 import sys
 import numpy as np
+from mcts import MCTS_CandyCrush
 
 class Viz:
 
@@ -49,6 +50,8 @@ class Viz:
         i_clicked = -1 
         j_clicked = -1
         clicked = False
+        highlight_move = False
+        best_move = None
 
         board_copy = self.board.copy()
 
@@ -64,6 +67,11 @@ class Viz:
 
             if keys[pygame.K_q]:
                 run = False
+
+            if keys[pygame.K_m]:
+                mcts = MCTS_CandyCrush(self.board, exploration_param=10, max_depth=5, n_simulation=300, no_log = True, write_log_file = False)
+                best_move = mcts.best_move()
+                highlight_move = True
             
             # Get where the mouse clicked
 
@@ -84,27 +92,31 @@ class Viz:
                     self.action.swap(i_clicked, j_clicked, i_clicked - 1, j_clicked, step_by_step=True)
                     clicked = False
                     display_action = True
+                    highlight_move = False
             if clicked and keys[pygame.K_DOWN]:
                 if i_clicked + 1 < self.board.N:
                     board_copy = self.board.copy()
                     self.action.swap(i_clicked, j_clicked, i_clicked + 1, j_clicked, step_by_step=True)
                     clicked = False
                     display_action = True
+                    highlight_move = False
             if clicked and keys[pygame.K_LEFT]:
                 if j_clicked - 1 >= 0:
                     board_copy = self.board.copy()
                     self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked - 1, step_by_step=True)
                     clicked = False
                     display_action = True
+                    highlight_move = False
             if clicked and keys[pygame.K_RIGHT]:
                 if j_clicked + 1 < self.board.M:
                     board_copy = self.board.copy()
                     self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked + 1, step_by_step=True)
                     clicked = False
                     display_action = True
+                    highlight_move = False
 
             if display_action==False:
-                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked)
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked,highlight_move,best_move)
                 pygame.display.update()
 
 
@@ -147,9 +159,15 @@ class Viz:
         sys.exit()
 
 
-    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0):
+    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None):
 
         win.fill((0, 0, 0))
+
+        if highlight_move:
+            i1, j1 = best_move[0]
+            i2, j2 = best_move[1]
+            pygame.draw.rect(win, (0, 255, 0), (x_cases[j1] - width / 2 - 4, y_cases[i1] - height / 2 - 4, width + 8, height + 8))
+            pygame.draw.rect(win, (0, 255, 0), (x_cases[j2] - width / 2 - 4, y_cases[i2] - height / 2 - 4, width + 8, height + 8))
 
         for i in range(self.board.N):
             for j in range(self.board.M):
@@ -168,6 +186,7 @@ class Viz:
                         pygame.draw.rect(win, (255, 255, 255), (x_cases[j] - width / 4, y_cases[i] - height / 4, width / 2, height / 2), 2)
                 else:
                     pygame.draw.circle(win, (250, 0, 0), (x_cases[j], y_cases[i]), 20)
+
 
         # Display the score
 
