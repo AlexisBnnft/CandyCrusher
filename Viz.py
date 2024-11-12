@@ -1,6 +1,7 @@
 
 from board import Board, Action
 from candy import Candy
+from candy import N_CANDY
 import pygame
 import sys
 import numpy as np
@@ -69,9 +70,21 @@ class Viz:
                 run = False
 
             if keys[pygame.K_m]:
-                mcts = MCTS_CandyCrush(self.board, exploration_param=10, max_depth=5, n_simulation=300, no_log = True, write_log_file = False)
+                mcts = MCTS_CandyCrush(self.board, exploration_param=1000, max_depth=5, n_simulation=300, no_log = True, write_log_file = False)
                 best_move = mcts.best_move()
                 highlight_move = True
+
+            if keys[pygame.K_u]:
+                self.board.update()
+
+            if clicked:
+                for i in range(N_CANDY):
+                    if keys[pygame.K_1 + i] or keys[pygame.K_KP1 + i]:
+                        prev_type=self.board.board[i_clicked, j_clicked].type
+                        self.board.board[i_clicked, j_clicked] = Candy(i + 1, prev_type)
+                        clicked = False
+                        break
+
             
             # Get where the mouse clicked
 

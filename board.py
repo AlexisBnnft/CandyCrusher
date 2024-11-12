@@ -404,24 +404,23 @@ class Board:
             return 0
         if self.board[row, col].type=='normal':
             self.board[row, col] = Candy(0,'empty')
-            return 1
+            return 40
         elif self.board[row, col].type=='raye_hor':
             self.remove_piece(row, col,force_remove=True)
-            count=1
+            count=500
             for i in range(self.M):
                 count+=self.remove_piece(row, i)
             return count
         elif self.board[row, col].type=='raye_ver':
             self.remove_piece(row, col,force_remove=True)
-            count=1
+            count=500
             for i in range(self.N):
                 count+=self.remove_piece(i, col)
             return count
         elif self.board[row, col].type=='sachet':
             ### A modifier pour double pop
             self.remove_piece(row, col,force_remove=True)
-            count=1
-            
+            count=1000  
             for i in range(max([0,row-1]),min([self.N,row+2])):
                 for j in range(max([0,col-1]),min([self.M,col+2])):
                     count+=self.remove_piece(i, j)
@@ -429,7 +428,7 @@ class Board:
         elif self.board[row, col].type=='disco':
             # Remove all candies of a random id
             self.remove_piece(row, col,force_remove=True)
-            count=1
+            count=5000
             id_rand=np.random.randint(1, N_CANDY + 1)
             for i in range(self.N):
                 for j in range(self.M):
