@@ -4,7 +4,6 @@ import logging
 from copy import deepcopy
 from board import Action, Board
 import numpy as np
-from tqdm import tqdm
 
 class MCTS_CandyCrush_Complex:
     def __init__(self, board, exploration_param=1.4, N_rollout=5, n_simulation=100, no_log = True, write_log_file = False):
@@ -63,7 +62,7 @@ class MCTS_CandyCrush_Complex:
 
     def best_move(self, return_all = False):
         """Runs simulations to find the best move from the root state."""
-        for i in tqdm(range(self.n_simulation)):
+        for i in range(self.n_simulation):
             self.logger.info(f"\n--- Simulation {i + 1} ---")
             self.run_simulation()
 
@@ -180,7 +179,7 @@ if __name__ == "__main__":
     b.update()
     
     # Initialize the MCTS with the given board `b` and log output to a file
-    mcts = MCTS_CandyCrush(b, exploration_param=100000, N_rollout=5, n_simulation=10000, no_log = False, write_log_file=True)
+    mcts = MCTS_CandyCrush_Complex(b, exploration_param=100000, N_rollout=5, n_simulation=10000, no_log = False, write_log_file=True)
     
     # Run MCTS to find the best move with step-by-step logs
     best_move = mcts.best_move()  # Adjust number of simulations if needed

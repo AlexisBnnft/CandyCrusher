@@ -1,0 +1,8 @@
+
+[tool.pygbag]
+entry_point = "main.py"
+title = "Candy Crusher"
+version = "1.0"
+
+[tool.pygbag.package]
+include = ["main.py", "board.py", "Viz.py"]
