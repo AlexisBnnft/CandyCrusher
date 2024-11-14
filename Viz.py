@@ -9,10 +9,16 @@ from mcts import MCTS_CandyCrush
 from mcts_complex import MCTS_CandyCrush_Complex
 from tqdm import tqdm
 
+### MCTS PARAM FOR VIZ
+EXPLORATION_PARAM = 5000
+N_ROLLOUT = 3
+N_SIMULATION = 3000
+N_RANDOM = 1
+
 
 class Viz:
 
-    def __init__(self, board: Board, action: Action, is_colloc: bool = False):
+    def __init__(self, board: Board, action: Action, is_colloc: bool = False, N_RANDOM = N_RANDOM, EXPLORATION_PARAM = EXPLORATION_PARAM, N_ROLLOUT = N_ROLLOUT, N_SIMULATION = N_SIMULATION):
         """
         Initialize the Viz class with a board and an action.
         """
@@ -20,6 +26,12 @@ class Viz:
         self.board = board
         self.action = action
         self.is_colloc = is_colloc
+        self.N_RANDOM = N_RANDOM
+        self.EXPLORATION_PARAM = EXPLORATION_PARAM
+        self.N_ROLLOUT = N_ROLLOUT
+        self.N_SIMULATION = N_SIMULATION
+
+
     
     def Visualize(self):
         """
@@ -60,6 +72,7 @@ class Viz:
         board_copy = self.board.copy()
         all_move = None
         visible_menu = False
+        slot_save = None
         while run:
             
             pygame.time.delay(50)
@@ -79,18 +92,32 @@ class Viz:
 
             if keys[pygame.K_m]:
                 clicked = False
-                mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=5000, N_rollout=4, n_simulation=500*5*2, no_log = True, write_log_file = False)
-                best_move, all_move = mcts.best_move(return_all=True)
+                mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = False, write_log_file = True)
+                best_move, all_move = mcts.best_move(return_all=True, N_random = self.N_RANDOM)
                 highlight_move = True
             
 
             if keys[pygame.K_c]:
-                # Copy the given board to a file
-                self.save_board_to_file('copied_board.txt')
+                if slot_save is not None:
+                    self.save_board_to_file(f'copied_board_{slot_save}.txt')
+                else:
+                    self.save_board_to_file('copied_board.txt')
+            
+            if keys[pygame.K_d]:
+                pygame.time.delay(100)
+                if slot_save is not None:
+                    slot_save += 1
+                else:
+                    slot_save = 0
+                if slot_save > 9:
+                    slot_save = 0
             
             if keys[pygame.K_v]:
                 # Paste the board from the file
-                board = read_board_from_file('copied_board.txt')
+                if slot_save is None:
+                    board = read_board_from_file('copied_board.txt')
+                else:
+                    board = read_board_from_file(f'copied_board_{slot_save}.txt')
                 self.board = board
                 self.action = Action(self.board)
                 board_copy = self.board.copy()
@@ -177,7 +204,7 @@ class Viz:
                     all_move = None
 
             if display_action==False:
-                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move, visible_menu,time_delay)
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move, visible_menu,time_delay, save_slot=slot_save)
                 pygame.display.update()
 
 
@@ -218,7 +245,7 @@ class Viz:
         sys.exit()
 
 
-    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None, all_move = None, visible_menu = False, time_delay=None):
+    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None, all_move = None, visible_menu = False, time_delay=None, save_slot = None):
 
         win.fill((0, 0, 0))
 
@@ -267,6 +294,8 @@ class Viz:
             win.blit(menu_text_1, (x_menu, y_menu))
             menu_text_2 = font.render(f"{time_delay}", True, (255, 255, 255))
             win.blit(menu_text_2, (x_menu, y_menu+30))
+            menu_text_2 = font.render(f"Copy/Save Slot : {save_slot}", True, (255, 255, 255))
+            win.blit(menu_text_2, (x_menu, y_menu+60))
 
             shortcut_text = font.render(f"Shortcuts:", True, (255, 255, 255))
             win.blit(shortcut_text, (x_menu, y_menu+90))

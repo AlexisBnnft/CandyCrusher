@@ -4,6 +4,7 @@ N_CANDY = 6 # Number of different candies
 NUM_DISCO = 7
 TYPES = {'normal','raye_hor','raye_ver','sachet','disco','empty'}
 TYPE_TO_ID = {'normal':0,'raye_hor':1,'raye_ver':2,'sachet': 3,'disco':4,'empty':5}
+ID_TO_TYPE = {0:'normal',1:'raye_hor',2:'raye_ver',3:'sachet',4:'disco',5:'empty'}
 TYPE_DISPLAY = {'normal':'N','raye_hor':'H','raye_ver':'V','sachet':'S','disco':'D','empty':'E'}
 class Candy:
     def __init__(self, id, type='normal'):

@@ -6,7 +6,7 @@ from board import Action, Board
 import numpy as np
 from tqdm import tqdm
 
-class MCTS_CandyCrush_Complex:
+class MCTS_CandyCrush_Final:
     def __init__(self, board, exploration_param=1.4, N_rollout=5, n_simulation=100, no_log = True, write_log_file = False):
         """
         Initialize the MCTS with the given parameters.
@@ -24,7 +24,6 @@ class MCTS_CandyCrush_Complex:
         self.exploration_param = exploration_param
         self.N_rollout = N_rollout
         self.n_simulation = n_simulation
-        self.state_action_to_board = {}
 
         # Set up logging
         if no_log:
@@ -42,11 +41,15 @@ class MCTS_CandyCrush_Complex:
         logger = logging.getLogger('MCTS_CandyCrush')
         logger.setLevel(logging.DEBUG)
 
-        for handler in logger.handlers[:]:
-            logger.removeHandler(handler)
+        # Console handler
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
 
         # Formatter without timestamp and log level
         formatter = logging.Formatter('%(message)s')
+        ch.setFormatter(formatter)
+
+        logger.addHandler(ch)
 
         # File handler in write mode to clear previous contents
         if write_log_file:
@@ -54,22 +57,15 @@ class MCTS_CandyCrush_Complex:
             fh.setLevel(logging.DEBUG)
             fh.setFormatter(formatter)
             logger.addHandler(fh)
-        
-        # Console handler with ERROR level
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.ERROR)
-        ch.setFormatter(formatter)
-        logger.addHandler(ch)
-
 
         return logger
 
 
-    def best_move(self, return_all = False, N_random = 3):
+    def best_move(self, return_all = False):
         """Runs simulations to find the best move from the root state."""
         for i in tqdm(range(self.n_simulation)):
             self.logger.info(f"\n--- Simulation {i + 1} ---")
-            self.run_simulation(N_random=N_random)
+            self.run_simulation()
 
         # Choose the action with the highest average Q value from the root state
         root_state = self.root_board.state()
@@ -97,81 +93,110 @@ class MCTS_CandyCrush_Complex:
                 all_moves_info.append((move, visits, mean_reward))
             return best_action, all_moves_info
 
-    def run_simulation(self, current_board=None, N_random = 10, depth = 0):
-        """Simulates a game sequence from the root state."""
+    def run_simulation(self, current_board=None):
+        """
+        Simulates a game sequence from the root state using MCTS.
         
-        if current_board is None:
-            current_board = deepcopy(self.root_board)  # Start with the root board for the first call
-        state = current_board.state()
-        legal_moves = current_board.get_legal_moves()
+        Args:
+            current_board (Board, optional): Current game board state. If None, starts from root.
+            
+        Returns:
+            float: The final reward (score) from this simulation path
+        """
+
+        
+        # Initialize board state
+        simulation_board = deepcopy(self.root_board if current_board is None else current_board)
+        current_state = simulation_board.state()
+        
+        # Check for legal moves
+        legal_moves = simulation_board.get_legal_moves()
         if not legal_moves:
             return 0
-        init_move = self.select_move(state, legal_moves)
-        if (state, init_move) not in self.state_action_to_board.keys():
-            self.logger.info(f"Initializing state-action pair: {(hex(state), init_move)}")
-            self.state_action_to_board[(state, init_move)] = []
-        if len(self.state_action_to_board[state, init_move]) > N_random:
-            self.logger.info(f"We have enough randomness on this {(state,init_move)}")
-            # Choose a random state that we saw before
-            self.logger.info(f"Our self.state_action_to_board is {self.state_action_to_board[(state, init_move)]}")
-            # Choose a random board with state, action pair
-            current_board = random.choice(self.state_action_to_board[state, init_move])
-            self.logger.info(f"New board state after forced randomness: {hex(current_board.state())}, Score: {current_board.score}")
-        else:
-            # Simulate the move
-            Action(current_board).swap(*init_move[0], *init_move[1])
-            current_board.update()
-            self.logger.info(f"New board state after move: {hex(current_board.state())}, Score: {current_board.score}")
-            self.state_action_to_board[state, init_move].append(current_board.copy())
-            self.logger.info(f"Updating state-action pair: {(hex(state), init_move)} to add a new state -> {hex(current_board.state())}")
-        # If the new state has not been visited before, run a simulation
-        if current_board.state() not in self.N_state:
-            rollout_board = deepcopy(current_board)
-            ## Random rollout
-            self.logger.info("State has not been visited before. Running random rollout, but saving it for future.")
-            # Expansion
-            self.N_state[current_board.state()] = 1
-            for iter in range(self.N_rollout):
-                legal_moves = current_board.get_legal_moves()
-                if not legal_moves:
-                    break
-                move = random.choice(legal_moves)
-                Action(rollout_board).swap(*move[0], *move[1])
-                rollout_board.update()
-                # Increase depth
-                depth += 1 
-            # Calculate the reward at the end of the simulation
-            reward = current_board.score
-            self.logger.info(f"End of simulation with depth {depth}. Reward (Score): {reward}")
-            self.N[(current_board.state(), init_move)] = self.N.get((current_board.state(), init_move), 0) + 1
-            self.Q[(current_board.state(), init_move)] = (self.Q.get((current_board.state(), init_move), 0) * (self.N[(current_board.state(), init_move)] - 1) + reward) / self.N[(current_board.state(), init_move)]
-
-            # Backpropagate reward
-            self.N[(state, init_move)] = self.N.get((state, init_move), 0) + 1
-            self.Q[(state, init_move)] = (self.Q.get((state, init_move), 0) * (self.N[(state, init_move)] - 1) + reward) / self.N[(state, init_move)]
-
-            self.N_state[state] = self.N_state.get(state, 0) + 1
-            self.logger.info(f"We know have in Q and N a number of states and moves: , {len(self.Q)}")
+        
+        # Select and apply move
+        selected_move = self.select_move(current_state, legal_moves)
+        Action(simulation_board).swap(*selected_move[0], *selected_move[1])
+        simulation_board.update()
+        
+        new_state = simulation_board.state()
+        self.logger.info(f"New board state after move: {hex(new_state)}, Score: {simulation_board.score}")
+        
+        # Handle unvisited states
+        if new_state not in self.N_state:
+            self.logger.info("State has not been visited before. Running random rollout.")
+            reward = self._run_random_rollout(simulation_board)
+            #self._update_statistics(current_state, new_state, selected_move, reward)
+            self._update_state_action_stats(current_state, selected_move, reward)
             return reward
         
-        # If the new state has been visited before, run a simulation
+        # Handle visited states
         else:
             self.logger.info("State has been visited before. Running simulation.")
-            #self.logger.info(current_board.display())
-
-            current_score = current_board.score
-            reward = self.run_simulation(current_board=current_board.copy(), depth = depth + 1, N_random = N_random)
-            true_reward = reward - current_score
-            # Backpropagate reward
-            self.N[(current_board.state(), init_move)] = self.N.get((current_board.state(), init_move), 0) + 1
-            self.Q[(current_board.state(), init_move)] = (self.Q.get((current_board.state(), init_move), 0) * (self.N[(current_board.state(), init_move)] - 1) + true_reward) / self.N[(current_board.state(), init_move)]
-            self.N_state[current_board.state()] = self.N_state.get(current_board.state(), 0) + 1
+            current_score = simulation_board.score
+            future_reward = self.run_simulation(current_board=simulation_board)
+            incremental_reward = future_reward - current_score
             
-            self.N[(state, init_move)] = self.N.get((state, init_move), 0) + 1
-            self.Q[(state, init_move)] = (self.Q.get((state, init_move), 0) * (self.N[(state, init_move)] - 1) + reward) / self.N[(state, init_move)]
-            self.N_state[state] = self.N_state.get(state, 0) + 1
-            return reward
+            # Update statistics with the incremental reward for the current state
+            self._update_state_action_stats(new_state, selected_move, incremental_reward)
+            # Update statistics with the total reward for the parent state
+            self._update_state_action_stats(current_state, selected_move, future_reward)
+            
+            # Update state visit counts
+            self.N_state[new_state] = self.N_state.get(new_state, 0) + 1
+            self.N_state[current_state] = self.N_state.get(current_state, 0) + 1
+            
+            return future_reward
         
+    def _update_state_action_stats(self, state, action, reward):
+        """
+        Updates the Q-value and visit count for a state-action pair.
+        
+        Args:
+            state (int): The board state hash
+            action (tuple): The selected move
+            reward (float): The reward to incorporate
+        """
+        # Update visit count
+        self.N[(state, action)] = self.N.get((state, action), 0) + 1
+        visit_count = self.N[(state, action)]
+        
+        # Update Q-value using incremental mean formula
+        current_q = self.Q.get((state, action), 0)
+        self.Q[(state, action)] = (current_q * (visit_count - 1) + reward) / visit_count
+    
+
+    def _run_random_rollout(self, board):
+        """
+        Performs a random rollout from the given board state.
+        
+        Args:
+            board (Board): The current board state
+            
+        Returns:
+            float: Final score after rollout
+        """
+        simulation_board = deepcopy(board)
+        starting_state = simulation_board.state()
+        self.N_state[simulation_board.state()] = 1
+        if starting_state not in self.N_state:
+            self.N_state[starting_state] = 0
+        
+        # Increment visit count
+        self.N_state[starting_state] += 1
+        
+        for depth in range(self.N_rollout):
+            legal_moves = simulation_board.get_legal_moves()
+            if not legal_moves:
+                break
+                
+            move = random.choice(legal_moves)
+            Action(simulation_board).swap(*move[0], *move[1])
+            simulation_board.update()
+        
+        final_reward = simulation_board.score
+        self.logger.info(f"End of rollout at depth {depth + 1}. Reward (Score): {final_reward}")
+        return final_reward
             
     def select_move(self, state, legal_moves):
         """Selects a move using the UCB1 exploration strategy."""
@@ -193,12 +218,12 @@ class MCTS_CandyCrush_Complex:
 if __name__ == "__main__":
     random.seed(42)
     np.random.seed(42)
-    b = Board(5, 5)
+    b = Board(7, 7)
     b.fill_random()
     b.update()
     
     # Initialize the MCTS with the given board `b` and log output to a file
-    mcts = MCTS_CandyCrush_Complex(b, exploration_param=1000, N_rollout=4, n_simulation=1000, no_log = False, write_log_file=True)
+    mcts = MCTS_CandyCrush_Final(b, exploration_param=100000, N_rollout=5, n_simulation=10000, no_log = False, write_log_file=True)
     
     # Run MCTS to find the best move with step-by-step logs
     best_move = mcts.best_move()  # Adjust number of simulations if needed

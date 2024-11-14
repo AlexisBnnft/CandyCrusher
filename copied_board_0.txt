@@ -1,0 +1,8 @@
+7 7 120
+4_normal 2_normal 5_normal 1_normal 5_normal 6_normal 4_normal
+1_normal 4_normal 2_normal 4_normal 4_normal 6_normal 3_normal
+1_normal 4_normal 1_normal 3_normal 1_normal 1_normal 2_normal
+3_normal 1_normal 1_normal 3_normal 5_normal 4_normal 3_normal
+6_normal 3_normal 2_normal 4_normal 2_normal 3_normal 2_normal
+5_normal 2_normal 4_normal 3_normal 1_normal 2_normal 3_normal
+5_normal 4_normal 5_normal 2_normal 2_normal 6_normal 1_normal
