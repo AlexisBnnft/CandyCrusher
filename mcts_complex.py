@@ -50,7 +50,7 @@ class MCTS_CandyCrush_Complex:
 
         # File handler in write mode to clear previous contents
         if write_log_file:
-            fh = logging.FileHandler('mcts_log.txt', mode='w')
+            fh = logging.FileHandler('log/mcts_log.txt', mode='w')
             fh.setLevel(logging.DEBUG)
             fh.setFormatter(formatter)
             logger.addHandler(fh)
