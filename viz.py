@@ -3,6 +3,9 @@ from board import Board, Action,read_board_from_file
 from candy import Candy
 from candy import N_CANDY
 import pygame
+import pygame_widgets
+from pygame_widgets.slider import Slider
+from pygame_widgets.textbox import TextBox
 import sys
 import numpy as np
 from mcts import MCTS_CandyCrush
@@ -40,8 +43,8 @@ class Viz:
 
         pygame.init()
 
-        screenwidth = 800
-        screenheight = 800
+        screenwidth = 600
+        screenheight = 600
         menu_width = 200
         self.screenwidth = screenwidth
         self.screenheight = screenheight
@@ -76,11 +79,26 @@ class Viz:
         all_move = None
         visible_menu = False
         slot_save = None
+        self.board.score = 0
+        mcts_mode = False
+
+
+        x_mcts_mode = 0
+        y_mcts_mode = screenheight + 30
+        slider_simu = Slider(win, x_mcts_mode+180, y_mcts_mode, 180, 10, min=500, max=10000, step=500, initial=self.N_SIMULATION)
+        slider_simu_output = TextBox(win, x_mcts_mode+180+5, y_mcts_mode-30, 175, 20, fontSize=12)
+        slider_simu_output.disable()
+        slider_explo = Slider(win, x_mcts_mode+380, y_mcts_mode, 180, 10, min=500, max=10000, step=500, initial=self.EXPLORATION_PARAM)
+        slider_explo_output = TextBox(win, x_mcts_mode+380+5, y_mcts_mode-30, 175, 20, fontSize=12)
+        slider_explo_output.disable()
+
         while run:
             
             pygame.time.delay(50)
 
-            for event in pygame.event.get():
+            events = pygame.event.get()
+
+            for event in events:
                 if event.type == pygame.QUIT:
                     run = False
 
@@ -94,10 +112,26 @@ class Viz:
                 time_delay = 100 if time_delay == 500 else 500
 
             if keys[pygame.K_m]:
-                clicked = False
-                mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = True, write_log_file = False)
-                best_move, all_move = mcts.best_move(return_all=True, N_random = self.N_RANDOM)
-                highlight_move = True
+                if mcts_mode:
+                    mcts_mode = False
+                    self.screenheight=screenheight
+                else:
+                    mcts_mode = True
+                    self.screenheight=screenheight+50
+                win = pygame.display.set_mode((self.screenwidth, self.screenheight))
+
+            if mcts_mode:
+                if keys[pygame.K_p]:
+                    clicked = False
+                    mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = True, write_log_file = False)
+                    best_move, all_move = mcts.best_move(return_all=True, N_random = self.N_RANDOM)
+                    highlight_move = True
+                slider1=slider_simu.getValue()
+                self.N_SIMULATION = int(slider1)
+                slider_simu_output.setText('Number of simulations:  '+str(self.N_SIMULATION))
+                slider2=slider_explo.getValue()
+                self.EXPLORATION_PARAM = int(slider2)
+                slider_explo_output.setText('Exploration parameter:  '+str(self.EXPLORATION_PARAM))
             
 
             if keys[pygame.K_c]:
@@ -136,6 +170,7 @@ class Viz:
                 pygame.time.delay(50)
                 if self.screenwidth == screenwidth+menu_width:
                     self.screenwidth = screenwidth
+                    visible_menu = False
                 else:
                     self.screenwidth = screenwidth+menu_width
                     visible_menu = True
@@ -207,23 +242,21 @@ class Viz:
                     all_move = None
 
             if display_action==False:
-                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move, visible_menu,time_delay, save_slot=slot_save)
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move, visible_menu,time_delay, save_slot=slot_save,mcts_mode=mcts_mode)
                 pygame.display.update()
 
 
             while display_action:
-                self.board_visual(candy_images,win,x_cases,width,y_cases,height)
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height,visible_menu=visible_menu,time_delay=time_delay)
                 pygame.display.update()
                 pygame.time.delay(time_delay)
                 fall1=self.board.make_it_fall()
                 fall2=self.board.fill_random()
                 fall=fall1+fall2
-                self.board_visual(candy_images,win,x_cases,width,y_cases,height)
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height,visible_menu=visible_menu,time_delay=time_delay)
                 pygame.display.update()
                 pygame.time.delay(time_delay)
                 display_action=self.board.update(fall=fall,step_by_step=True)
-
-            
 
             
             if keys[pygame.K_s]:
@@ -240,6 +273,7 @@ class Viz:
 
 
             pygame.display.update()
+            pygame_widgets.update(events)
 
             
 
@@ -248,7 +282,7 @@ class Viz:
         sys.exit()
 
 
-    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None, all_move = None, visible_menu = False, time_delay=None, save_slot = None):
+    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None, all_move = None, visible_menu = False, time_delay=None, save_slot = None,mcts_mode = False):
 
         win.fill((0, 0, 0))
         win.blit(pygame.image.load('assets/background/image.png'), (0, 0))
@@ -290,7 +324,7 @@ class Viz:
                 win.blit(text2, (middle_x-20, middle_y + 10))
         
         if visible_menu:
-            x_menu = 800
+            x_menu = self.screenwidth - 190
             y_menu = 20
             font = pygame.font.Font(None, 24)
             menu_text_1 = font.render(f"Speed (change with W)", True, (255, 255, 255))
@@ -302,7 +336,7 @@ class Viz:
 
             shortcut_text = font.render(f"Shortcuts:", True, (255, 255, 255))
             win.blit(shortcut_text, (x_menu, y_menu+90))
-            shortcut_text = font.render(f"M: Run MCTS", True, (255, 255, 255))
+            shortcut_text = font.render(f"M: Enter MCTS Mode", True, (255, 255, 255))
             win.blit(shortcut_text, (x_menu, y_menu+120))
             shortcut_text = font.render(f"U: Update the board", True, (255, 255, 255))
             win.blit(shortcut_text, (x_menu, y_menu+150))
@@ -318,6 +352,14 @@ class Viz:
             win.blit(shortcut_text, (x_menu, y_menu+300))
             shortcut_text = font.render(f"Arrows: Move the candy", True, (255, 255, 255))
             win.blit(shortcut_text, (x_menu, y_menu+330))
+
+
+        if mcts_mode:
+            events = pygame.event.get()
+            pygame_widgets.update(events)
+            font = pygame.font.Font(None, 24)
+            shortcut_text = font.render(f"P: Run the MCTS", True, (255, 255, 255))
+            win.blit(shortcut_text, (20, self.screenheight-40))
 
 
         # Display the score
