@@ -160,6 +160,7 @@ class Viz_2_player:
                 pygame.time.delay(50)
                 if self.screenwidth == base_screenwidth*2+menu_width:
                     self.screenwidth = base_screenwidth*2
+                    visible_menu = False
                 else:
                     self.screenwidth = base_screenwidth*2+menu_width
                     visible_menu = True
