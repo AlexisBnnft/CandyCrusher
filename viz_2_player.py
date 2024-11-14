@@ -75,6 +75,7 @@ class Viz_2_player:
         best_move = None
         mcts = None
         board_copy = self.board.copy()
+        board_ai_copy = self.board_AI.copy()
         all_move = None
         visible_menu = False
         slot_save = None
@@ -196,6 +197,7 @@ class Viz_2_player:
             if clicked and keys[pygame.K_UP]:
                 if i_clicked - 1 >= 0:
                     board_copy = self.board.copy()
+                    board_ai_copy = self.board_AI.copy()
                     self.action.swap(i_clicked, j_clicked, i_clicked - 1, j_clicked, step_by_step=True)
                     clicked = False
                     display_action = True
@@ -206,6 +208,7 @@ class Viz_2_player:
                 if i_clicked + 1 < self.board.N:
                     print(i_clicked, j_clicked)
                     board_copy = self.board.copy()
+                    board_ai_copy = self.board_AI.copy()
                     self.action.swap(i_clicked, j_clicked, i_clicked + 1, j_clicked, step_by_step=True)
                     clicked = False
                     display_action = True
@@ -215,6 +218,7 @@ class Viz_2_player:
             if clicked and keys[pygame.K_LEFT]:
                 if j_clicked - 1 >= 0:
                     board_copy = self.board.copy()
+                    board_ai_copy = self.board_AI.copy()
                     self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked - 1, step_by_step=True)
                     clicked = False
                     display_action = True
@@ -224,6 +228,7 @@ class Viz_2_player:
             if clicked and keys[pygame.K_RIGHT]:
                 if j_clicked + 1 < self.board.M:
                     board_copy = self.board.copy()
+                    board_ai_copy = self.board_AI.copy()
                     self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked + 1, step_by_step=True)
                     clicked = False
                     display_action = True
@@ -268,6 +273,8 @@ class Viz_2_player:
                 clicked = False
                 self.board = board_copy
                 self.action = Action(self.board)
+                self.board_AI = board_ai_copy
+                self.AI_action = Action(self.board_AI)
 
 
             pygame.display.update()

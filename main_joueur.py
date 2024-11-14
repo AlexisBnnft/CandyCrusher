@@ -12,13 +12,6 @@ def main():
     parser.add_argument('-nrand', '--n_random', type=int, default=N_RANDOM, help='Number of random moves for MCTS')
     args = parser.parse_args()
 
-
-    # Update the constants in Viz.py
-    Viz.EXPLORATION_PARAM = args.exploration_param
-    Viz.N_ROLLOUT = args.n_rollout
-    Viz.N_SIMULATION = args.n_simulation
-    Viz.N_RANDOM = args.n_random
-
     b = Board(7, 7)
     a = Action(b)
     b.fill_random()
