@@ -9,22 +9,24 @@ from mcts import MCTS_CandyCrush
 from mcts_complex import MCTS_CandyCrush_Complex
 from tqdm import tqdm
 
-### MCTS PARAM FOR VIZ
+### MCTS PARAM FOR VIZ_2_player
 EXPLORATION_PARAM = 5000
 N_ROLLOUT = 3
-N_SIMULATION = 3000
+N_SIMULATION = 1000
 N_RANDOM = 1
 
 
-class Viz:
+class Viz_2_player:
 
     def __init__(self, board: Board, action: Action, is_colloc: bool = False, N_RANDOM = N_RANDOM, EXPLORATION_PARAM = EXPLORATION_PARAM, N_ROLLOUT = N_ROLLOUT, N_SIMULATION = N_SIMULATION):
         """
-        Initialize the Viz class with a board and an action.
+        Initialize the Viz_2_player class with a board and an action.
         """
 
         self.board = board
+        self.board_AI = board.copy()
         self.action = action
+        self.AI_action = Action(self.board_AI)
         self.is_colloc = is_colloc
         self.N_RANDOM = N_RANDOM
         self.EXPLORATION_PARAM = EXPLORATION_PARAM
@@ -40,17 +42,20 @@ class Viz:
 
         pygame.init()
 
-        screenwidth = 800
-        screenheight = 800
+        self.screenwidth = 700
+        self.screenheight = 700
         time_delay = 100
-        win = pygame.display.set_mode((screenwidth, screenheight))
+        win = pygame.display.set_mode((self.screenwidth*2, self.screenheight))
         pygame.display.set_caption("Candy Crush (official version)")
 
-        x_cases = np.linspace(screenwidth / (2 * self.board.M), screenwidth - screenwidth / (2 * self.board.M), self.board.M)
-        y_cases = np.linspace(screenheight / (2 * self.board.N), screenheight - screenheight / (2 * self.board.N), self.board.N)
+        x_cases = np.linspace(self.screenwidth / (self.board.M), self.screenwidth - self.screenwidth / (self.board.M), self.board.M)
+        y_cases = np.linspace(self.screenheight / (self.board.N), self.screenheight - self.screenheight / (self.board.N), self.board.N)
 
-        width = screenwidth / self.board.M / 2
-        height = screenheight / self.board.N / 2
+        AI_x_cases = np.linspace(self.screenwidth + self.screenwidth / (self.board.M), self.screenwidth + self.screenwidth - self.screenwidth / (self.board.M), self.board.M)
+        AI_y_cases = np.linspace(self.screenheight / (self.board.N), self.screenheight - self.screenheight / (self.board.N), self.board.N)
+
+        width = self.screenwidth / self.board.M / 2
+        height = self.screenheight / self.board.N / 2
 
         # Load candy images
         candy_images = []
@@ -90,11 +95,29 @@ class Viz:
                 pygame.time.delay(50)
                 time_delay = 100 if time_delay == 500 else 500
 
-            if keys[pygame.K_m]:
-                clicked = False
-                mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = False, write_log_file = True)
+
+            def run_mcts_on_AI_board(self, win):
+                # Put a text to show that the AI is thinking
+                font = pygame.font.Font(None, 36)
+                text = font.render(f"AI is thinking...", True, (255, 255, 255))
+                win.blit(text, (self.screenwidth + 10, 50))
+                pygame.display.update()
+
+                mcts = MCTS_CandyCrush_Complex(self.board_AI, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = False, write_log_file = True)
                 best_move, all_move = mcts.best_move(return_all=True, N_random = self.N_RANDOM)
                 highlight_move = True
+                # Show the best move on the board
+                self.highlight_move_on_win(win,AI_x_cases,AI_y_cases,width,height,best_move)
+                pygame.display.update() 
+                pygame.time.delay(500)  
+                # Apply the best move
+                self.AI_action.swap(best_move[0][0], best_move[0][1], best_move[1][0], best_move[1][1])
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height,AI_x_cases,AI_y_cases,)
+
+            if keys[pygame.K_m]:
+                clicked = False
+                run_mcts_on_AI_board(self, win)
+            
             
 
             if keys[pygame.K_c]:
@@ -131,12 +154,12 @@ class Viz:
 
             if keys[pygame.K_ESCAPE]:  # Press Escape to show popup
                 pygame.time.delay(50)
-                if screenwidth == 1000:
-                    screenwidth = 800
+                if self.screenwidth == 700:
+                    self.screenwidth = 900
                 else:
-                    screenwidth = 1000
+                    self.screenwidth = 900
                     visible_menu = True
-                win = pygame.display.set_mode((screenwidth, screenheight))
+                win = pygame.display.set_mode((self.screenwidth, self.screenheight))
         
 
 
@@ -178,14 +201,17 @@ class Viz:
                     display_action = True
                     highlight_move = False
                     all_move = None
+                    run_mcts_on_AI_board(self, win)
             if clicked and keys[pygame.K_DOWN]:
                 if i_clicked + 1 < self.board.N:
+                    print(i_clicked, j_clicked)
                     board_copy = self.board.copy()
                     self.action.swap(i_clicked, j_clicked, i_clicked + 1, j_clicked, step_by_step=True)
                     clicked = False
                     display_action = True
                     highlight_move = False
                     all_move = None
+                    run_mcts_on_AI_board(self, win)
             if clicked and keys[pygame.K_LEFT]:
                 if j_clicked - 1 >= 0:
                     board_copy = self.board.copy()
@@ -194,6 +220,7 @@ class Viz:
                     display_action = True
                     highlight_move = False
                     all_move = None
+                    run_mcts_on_AI_board(self, win)
             if clicked and keys[pygame.K_RIGHT]:
                 if j_clicked + 1 < self.board.M:
                     board_copy = self.board.copy()
@@ -202,20 +229,21 @@ class Viz:
                     display_action = True
                     highlight_move = False
                     all_move = None
+                    run_mcts_on_AI_board(self, win)
 
             if display_action==False:
-                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move, visible_menu,time_delay, save_slot=slot_save)
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height,AI_x_cases,AI_y_cases,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move, visible_menu,time_delay, save_slot=slot_save)
                 pygame.display.update()
 
 
             while display_action:
-                self.board_visual(candy_images,win,x_cases,width,y_cases,height)
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height,AI_x_cases,AI_y_cases)
                 pygame.display.update()
                 pygame.time.delay(time_delay)
                 fall1=self.board.make_it_fall()
                 fall2=self.board.fill_random()
                 fall=fall1+fall2
-                self.board_visual(candy_images,win,x_cases,width,y_cases,height)
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height,AI_x_cases,AI_y_cases,)
                 pygame.display.update()
                 pygame.time.delay(time_delay)
                 display_action=self.board.update(fall=fall,step_by_step=True)
@@ -228,7 +256,13 @@ class Viz:
                 self.board.empty()
                 self.board.fill_random()
                 self.board.update()
+                self.action = Action(self.board)
+                self.board_AI = self.board.copy()
                 self.board.score = 0 # Et non mon grand !
+                self.board_AI.score = 0
+                self.AI_action = Action(self.board_AI)
+
+                
 
             if keys[pygame.K_r]:
                 clicked = False
@@ -245,15 +279,18 @@ class Viz:
         sys.exit()
 
 
-    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None, all_move = None, visible_menu = False, time_delay=None, save_slot = None):
+    def highlight_move_on_win(self,win,x_cases,y_cases,width,height,move):
+        i1, j1 = move[0]
+        i2, j2 = move[1]
+        pygame.draw.rect(win, (0, 255, 0), (x_cases[j1] - width / 2 - 4, y_cases[i1] - height / 2 - 4, width + 8, height + 8))
+        pygame.draw.rect(win, (0, 255, 0), (x_cases[j2] - width / 2 - 4, y_cases[i2] - height / 2 - 4, width + 8, height + 8))
+
+    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,AI_x_cases,AI_y_cases,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None, all_move = None, visible_menu = False, time_delay=None, save_slot = None):
 
         win.fill((0, 0, 0))
-        win.blit(pygame.image.load('assets/background/image.png'), (0, 0))
+        #win.blit(pygame.image.load('assets/background/image.png'), (0, 0))
         if highlight_move:
-            i1, j1 = best_move[0]
-            i2, j2 = best_move[1]
-            pygame.draw.rect(win, (0, 255, 0), (x_cases[j1] - width / 2 - 4, y_cases[i1] - height / 2 - 4, width + 8, height + 8))
-            pygame.draw.rect(win, (0, 255, 0), (x_cases[j2] - width / 2 - 4, y_cases[i2] - height / 2 - 4, width + 8, height + 8))
+            self.highlight_move_on_win(win,x_cases,y_cases,width,height,best_move)
 
         for i in range(self.board.N):
             for j in range(self.board.M):
@@ -273,18 +310,38 @@ class Viz:
                 else:
                     pygame.draw.circle(win, (250, 0, 0), (x_cases[j], y_cases[i]), 20)
 
-        if all_move is not None:    
-            for move, visits, mean_reward in all_move:
-                i1, j1 = move[0]
-                i2, j2 = move[1]
-                # Write as a text the number of visits and the mean reward
-                font = pygame.font.Font(None, 18)
-                text1 = font.render(f"N: {visits}", True, (255, 255, 255))
-                middle_x = (x_cases[j1] + x_cases[j2]) / 2
-                middle_y = (y_cases[i1] + y_cases[i2]) / 2
-                win.blit(text1, (middle_x-20, middle_y - 10))
-                text2 = font.render(f"Q: {mean_reward/100:.1f}", True, (255, 255, 255))
-                win.blit(text2, (middle_x-20, middle_y + 10))
+
+        for i in range(self.board_AI.N):
+            for j in range(self.board_AI.M):
+                if self.board_AI.board[i, j] != Candy(0,'empty'):
+                    candy_index = int(self.board_AI.board[i, j].id) - 1
+                    candy_type = self.board_AI.board[i, j].type
+                    if clicked and i == i_clicked and j == j_clicked:
+                        pygame.draw.rect(win, (255, 255, 255), (AI_x_cases[j] - width / 2 - 2, AI_y_cases[i] - height / 2 - 2, width + 4, height + 4))
+                    win.blit(candy_images[candy_index], (AI_x_cases[j] - width / 2, AI_y_cases[i] - height / 2))
+                    # Add horizontal stripes for raye_hor,raye_ver and sachet typed candies
+                    if candy_type == 'raye_hor':
+                        pygame.draw.line(win, (255, 255, 255), (AI_x_cases[j] - width / 2, AI_y_cases[i]), (AI_x_cases[j] + width / 2, AI_y_cases[i]), 2)
+                    if candy_type=='raye_ver':
+                        pygame.draw.line(win, (255, 255, 255), (AI_x_cases[j], AI_y_cases[i] - height / 2), (AI_x_cases[j], AI_y_cases[i] + height / 2), 2)
+                    if candy_type=='sachet':
+                        pygame.draw.rect(win, (255, 255, 255), (AI_x_cases[j] - width / 4, AI_y_cases[i] - height / 4, width / 2, height / 2), 2)
+                else:
+                    pygame.draw.circle(win, (250, 0, 0), (AI_x_cases[j], AI_y_cases[i]), 20)
+
+
+        #if all_move is not None:    
+        #    for move, visits, mean_reward in all_move:
+        #        i1, j1 = move[0]
+        #        i2, j2 = move[1]
+        #        # Write as a text the number of visits and the mean reward
+        #        font = pygame.font.Font(None, 18)
+        #        text1 = font.render(f"N: {visits}", True, (255, 255, 255))
+        #        middle_x = (x_cases[j1] + x_cases[j2]) / 2
+        #        middle_y = (y_cases[i1] + y_cases[i2]) / 2
+        #        win.blit(text1, (middle_x-20, middle_y - 10))
+        #        text2 = font.render(f"Q: {mean_reward/100:.1f}", True, (255, 255, 255))
+        #        win.blit(text2, (middle_x-20, middle_y + 10))
         
         if visible_menu:
             x_menu = 800
@@ -322,6 +379,8 @@ class Viz:
         font = pygame.font.Font(None, 36)
         text = font.render(f"Score: {self.board.score}", True, (255, 255, 255))
         win.blit(text, (10, 10))
+        text = font.render(f"AI Score: {self.board_AI.score}", True, (255, 255, 255))
+        win.blit(text, (self.screenwidth + 10, 10))
 
 
 
