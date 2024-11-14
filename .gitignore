@@ -4,3 +4,5 @@ __pycache__/
 
 # Ignore macOS system files
 .DS_Store
+mcts_log.txt
+# IGnore mcts_log.txt
