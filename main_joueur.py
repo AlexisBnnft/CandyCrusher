@@ -1,10 +1,11 @@
 import argparse
-from Viz import *
+from viz import *
+from viz_2_player import *
 from board import *
 
 def main():
     parser = argparse.ArgumentParser(description='Candy Crush Game')
-    parser.add_argument('-m', '--mode', type=str, default='normal', help='Mode of the game (e.g., fun, normal)')
+    parser.add_argument('-m', '--mode', type=str, default='normal', help='Mode of the game (e.g., normal, AI)')
     parser.add_argument('-expl', '--exploration_param', type=int, default=EXPLORATION_PARAM, help='Exploration parameter for MCTS')
     parser.add_argument('-nrol', '--n_rollout', type=int, default=N_ROLLOUT, help='Number of rollouts for MCTS')
     parser.add_argument('-nsim', '--n_simulation', type=int, default=N_SIMULATION, help='Number of simulations for MCTS')
@@ -24,6 +25,8 @@ def main():
     b.update()
     if args.mode == 'fun':
         v = Viz(b, a, True)
+    elif args.mode == 'AI':
+        v = Viz_2_player(b, a)
     else:
         v = Viz(b, a)
     v.EXPLORATION_PARAM = args.exploration_param
