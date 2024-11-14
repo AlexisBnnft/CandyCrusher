@@ -42,8 +42,11 @@ class Viz:
 
         screenwidth = 800
         screenheight = 800
+        menu_width = 200
+        self.screenwidth = screenwidth
+        self.screenheight = screenheight
         time_delay = 100
-        win = pygame.display.set_mode((screenwidth, screenheight))
+        win = pygame.display.set_mode((self.screenwidth, self.screenheight))
         pygame.display.set_caption("Candy Crush (official version)")
 
         x_cases = np.linspace(screenwidth / (2 * self.board.M), screenwidth - screenwidth / (2 * self.board.M), self.board.M)
@@ -92,7 +95,7 @@ class Viz:
 
             if keys[pygame.K_m]:
                 clicked = False
-                mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = False, write_log_file = True)
+                mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = True, write_log_file = False)
                 best_move, all_move = mcts.best_move(return_all=True, N_random = self.N_RANDOM)
                 highlight_move = True
             
@@ -131,12 +134,12 @@ class Viz:
 
             if keys[pygame.K_ESCAPE]:  # Press Escape to show popup
                 pygame.time.delay(50)
-                if screenwidth == 1000:
-                    screenwidth = 800
+                if self.screenwidth == screenwidth+menu_width:
+                    self.screenwidth = screenwidth
                 else:
-                    screenwidth = 1000
+                    self.screenwidth = screenwidth+menu_width
                     visible_menu = True
-                win = pygame.display.set_mode((screenwidth, screenheight))
+                win = pygame.display.set_mode((self.screenwidth, self.screenheight))
         
 
 

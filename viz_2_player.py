@@ -42,8 +42,11 @@ class Viz_2_player:
 
         pygame.init()
 
-        self.screenwidth = 700
-        self.screenheight = 700
+        base_screenwidth = 600
+        base_screenheight = 600
+        menu_width = 200
+        self.screenwidth = base_screenwidth
+        self.screenheight = base_screenheight
         time_delay = 100
         win = pygame.display.set_mode((self.screenwidth*2, self.screenheight))
         pygame.display.set_caption("Candy Crush (official version)")
@@ -104,7 +107,7 @@ class Viz_2_player:
                 win.blit(text, (self.screenwidth + 10, 50))
                 pygame.display.update()
 
-                mcts = MCTS_CandyCrush_Complex(self.board_AI, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = False, write_log_file = True)
+                mcts = MCTS_CandyCrush_Complex(self.board_AI, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = True, write_log_file = False)
                 best_move, all_move = mcts.best_move(return_all=True, N_random = self.N_RANDOM)
                 highlight_move = True
                 # Show the best move on the board
@@ -155,10 +158,10 @@ class Viz_2_player:
 
             if keys[pygame.K_ESCAPE]:  # Press Escape to show popup
                 pygame.time.delay(50)
-                if self.screenwidth == 700:
-                    self.screenwidth = 900
+                if self.screenwidth == base_screenwidth*2+menu_width:
+                    self.screenwidth = base_screenwidth*2
                 else:
-                    self.screenwidth = 900
+                    self.screenwidth = base_screenwidth*2+menu_width
                     visible_menu = True
                 win = pygame.display.set_mode((self.screenwidth, self.screenheight))
         
@@ -198,43 +201,47 @@ class Viz_2_player:
                 if i_clicked - 1 >= 0:
                     board_copy = self.board.copy()
                     board_ai_copy = self.board_AI.copy()
-                    self.action.swap(i_clicked, j_clicked, i_clicked - 1, j_clicked, step_by_step=True)
+                    swapped=self.action.swap(i_clicked, j_clicked, i_clicked - 1, j_clicked, step_by_step=True)
                     clicked = False
                     display_action = True
                     highlight_move = False
                     all_move = None
-                    run_mcts_on_AI_board(self, win)
+                    if swapped:
+                        run_mcts_on_AI_board(self, win)
             if clicked and keys[pygame.K_DOWN]:
                 if i_clicked + 1 < self.board.N:
                     print(i_clicked, j_clicked)
                     board_copy = self.board.copy()
                     board_ai_copy = self.board_AI.copy()
-                    self.action.swap(i_clicked, j_clicked, i_clicked + 1, j_clicked, step_by_step=True)
+                    swapped=self.action.swap(i_clicked, j_clicked, i_clicked + 1, j_clicked, step_by_step=True)
                     clicked = False
                     display_action = True
                     highlight_move = False
                     all_move = None
-                    run_mcts_on_AI_board(self, win)
+                    if swapped:
+                        run_mcts_on_AI_board(self, win)
             if clicked and keys[pygame.K_LEFT]:
                 if j_clicked - 1 >= 0:
                     board_copy = self.board.copy()
                     board_ai_copy = self.board_AI.copy()
-                    self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked - 1, step_by_step=True)
+                    swapped=self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked - 1, step_by_step=True)
                     clicked = False
                     display_action = True
                     highlight_move = False
                     all_move = None
-                    run_mcts_on_AI_board(self, win)
+                    if swapped:
+                        run_mcts_on_AI_board(self, win)
             if clicked and keys[pygame.K_RIGHT]:
                 if j_clicked + 1 < self.board.M:
                     board_copy = self.board.copy()
                     board_ai_copy = self.board_AI.copy()
-                    self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked + 1, step_by_step=True)
+                    swapped=self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked + 1, step_by_step=True)
                     clicked = False
                     display_action = True
                     highlight_move = False
                     all_move = None
-                    run_mcts_on_AI_board(self, win)
+                    if swapped:
+                        run_mcts_on_AI_board(self, win)
 
             if display_action==False:
                 self.board_visual(candy_images,win,x_cases,width,y_cases,height,AI_x_cases,AI_y_cases,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move, visible_menu,time_delay, save_slot=slot_save)
@@ -323,8 +330,6 @@ class Viz_2_player:
                 if self.board_AI.board[i, j] != Candy(0,'empty'):
                     candy_index = int(self.board_AI.board[i, j].id) - 1
                     candy_type = self.board_AI.board[i, j].type
-                    if clicked and i == i_clicked and j == j_clicked:
-                        pygame.draw.rect(win, (255, 255, 255), (AI_x_cases[j] - width / 2 - 2, AI_y_cases[i] - height / 2 - 2, width + 4, height + 4))
                     win.blit(candy_images[candy_index], (AI_x_cases[j] - width / 2, AI_y_cases[i] - height / 2))
                     # Add horizontal stripes for raye_hor,raye_ver and sachet typed candies
                     if candy_type == 'raye_hor':
@@ -351,7 +356,7 @@ class Viz_2_player:
         #        win.blit(text2, (middle_x-20, middle_y + 10))
         
         if visible_menu:
-            x_menu = 800
+            x_menu = self.screenwidth - 200
             y_menu = 20
             font = pygame.font.Font(None, 24)
             menu_text_1 = font.render(f"Speed (change with W)", True, (255, 255, 255))
