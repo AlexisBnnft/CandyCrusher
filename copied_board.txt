@@ -1,8 +1,8 @@
-7 7 240
-3_normal 6_normal 4_normal 2_normal 1_normal 3_normal 5_normal
-1_normal 4_normal 3_normal 1_normal 4_normal 6_normal 4_normal
-1_normal 3_normal 6_normal 2_normal 3_normal 2_normal 5_normal
-5_normal 4_normal 5_normal 4_normal 3_normal 3_normal 2_normal
-3_normal 1_normal 2_normal 5_raye_hor 6_normal 4_normal 4_normal
-2_normal 3_normal 6_normal 4_normal 5_normal 5_normal 3_normal
-2_normal 1_normal 2_normal 4_normal 5_normal 4_normal 4_normal
+7 7 3120
+4_normal 4_normal 3_normal 3_normal 4_normal 1_normal 2_normal
+4_normal 5_normal 6_normal 3_normal 3_normal 1_normal 3_normal
+6_normal 5_normal 5_normal 2_normal 5_normal 6_normal 3_normal
+6_normal 3_normal 2_normal 4_normal 3_normal 3_normal 5_normal
+2_normal 5_normal 6_normal 6_normal 4_normal 2_normal 4_normal
+2_normal 5_normal 4_normal 4_normal 2_normal 3_normal 1_normal
+1_normal 6_normal 2_normal 3_normal 1_normal 2_normal 3_normal

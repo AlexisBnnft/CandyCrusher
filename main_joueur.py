@@ -22,7 +22,6 @@ def main():
     a = Action(b)
     b.fill_random()
     b.update()
-    b.display()
     if args.mode == 'fun':
         v = Viz(b, a, True)
     else:
