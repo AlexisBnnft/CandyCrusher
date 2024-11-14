@@ -248,7 +248,7 @@ class Viz:
     def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None, all_move = None, visible_menu = False, time_delay=None, save_slot = None):
 
         win.fill((0, 0, 0))
-
+        win.blit(pygame.image.load('assets/background/image.png'), (0, 0))
         if highlight_move:
             i1, j1 = best_move[0]
             i2, j2 = best_move[1]
