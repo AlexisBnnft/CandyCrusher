@@ -2,6 +2,8 @@
 from board import Board, Action,read_board_from_file
 from candy import Candy
 from candy import N_CANDY
+from candy import TYPES
+from candy import TYPE_TO_ID
 import pygame
 import pygame_widgets
 from pygame_widgets.slider import Slider
@@ -59,14 +61,17 @@ class Viz:
         height = screenheight / self.board.N / 2
 
         # Load candy images
-        candy_images = []
-        for i in range(1, 8):  # Assuming there are 10 types of candies
-            if self.is_colloc:
-                image = pygame.image.load(f'assets/colloc/candy_{i}.png')
-            else:
-                image = pygame.image.load(f'assets/candy/candy_{i}.png')
-            image = pygame.transform.scale(image, (int(width), int(height)))
-            candy_images.append(image)
+        types=['candy','raye_hor','raye_ver','sachet']
+        candy_images = [[None for _ in range(4)] for _ in range(7)]
+        for i in range(1, 7):  # Assuming there are 6 types of candies
+            for j in range (4):
+                if self.is_colloc:
+                    image = pygame.image.load(f'assets/colloc/candy_{i}.png')
+                else:
+                    image = pygame.image.load(f'assets/candy/{types[j]}_{i}.png')
+                image = pygame.transform.scale(image, (int(width), int(height)))
+                candy_images[i - 1][ j] = image
+        candy_images[6][0] = pygame.transform.scale(pygame.image.load('assets/candy/candy_7.png'), (int(width), int(height)))
 
         run = True
         i_clicked = -1 
@@ -297,16 +302,18 @@ class Viz:
                 if self.board.board[i, j] != Candy(0,'empty'):
                     candy_index = int(self.board.board[i, j].id) - 1
                     candy_type = self.board.board[i, j].type
+                    candy_type_index = TYPE_TO_ID[candy_type] if candy_type!='disco' else 0
                     if clicked and i == i_clicked and j == j_clicked:
                         pygame.draw.rect(win, (255, 255, 255), (x_cases[j] - width / 2 - 2, y_cases[i] - height / 2 - 2, width + 4, height + 4))
-                    win.blit(candy_images[candy_index], (x_cases[j] - width / 2, y_cases[i] - height / 2))
-                    # Add horizontal stripes for raye_hor,raye_ver and sachet typed candies
-                    if candy_type == 'raye_hor':
-                        pygame.draw.line(win, (255, 255, 255), (x_cases[j] - width / 2, y_cases[i]), (x_cases[j] + width / 2, y_cases[i]), 2)
-                    if candy_type=='raye_ver':
-                        pygame.draw.line(win, (255, 255, 255), (x_cases[j], y_cases[i] - height / 2), (x_cases[j], y_cases[i] + height / 2), 2)
-                    if candy_type=='sachet':
-                        pygame.draw.rect(win, (255, 255, 255), (x_cases[j] - width / 4, y_cases[i] - height / 4, width / 2, height / 2), 2)
+                    win.blit(candy_images[candy_index][candy_type_index], (x_cases[j] - width / 2, y_cases[i] - height / 2))
+                    if self.is_colloc:
+                        # Add horizontal stripes for raye_hor,raye_ver and sachet typed candies
+                        if candy_type == 'raye_hor':
+                            pygame.draw.line(win, (255, 255, 255), (x_cases[j] - width / 2, y_cases[i]), (x_cases[j] + width / 2, y_cases[i]), 2)
+                        if candy_type=='raye_ver':
+                            pygame.draw.line(win, (255, 255, 255), (x_cases[j], y_cases[i] - height / 2), (x_cases[j], y_cases[i] + height / 2), 2)
+                        if candy_type=='sachet':
+                            pygame.draw.rect(win, (255, 255, 255), (x_cases[j] - width / 4, y_cases[i] - height / 4, width / 2, height / 2), 2)
                 else:
                     pygame.draw.circle(win, (250, 0, 0), (x_cases[j], y_cases[i]), 20)
 

@@ -2,6 +2,8 @@
 from board import Board, Action,read_board_from_file
 from candy import Candy
 from candy import N_CANDY
+from candy import TYPES
+from candy import TYPE_TO_ID
 import pygame
 import sys
 import numpy as np
@@ -47,7 +49,7 @@ class Viz_2_player:
         menu_width = 200
         self.screenwidth = base_screenwidth
         self.screenheight = base_screenheight
-        time_delay = 100
+        time_delay = 500
         win = pygame.display.set_mode((self.screenwidth*2, self.screenheight))
         pygame.display.set_caption("Candy Crush (official version)")
 
@@ -61,14 +63,17 @@ class Viz_2_player:
         height = self.screenheight / self.board.N / 2
 
         # Load candy images
-        candy_images = []
-        for i in range(1, 8):  # Assuming there are 10 types of candies
-            if self.is_colloc:
-                image = pygame.image.load(f'assets/colloc/candy_{i}.png')
-            else:
-                image = pygame.image.load(f'assets/candy/candy_{i}.png')
-            image = pygame.transform.scale(image, (int(width), int(height)))
-            candy_images.append(image)
+        types=['candy','raye_hor','raye_ver','sachet']
+        candy_images = [[None for _ in range(4)] for _ in range(7)]
+        for i in range(1, 7):  # Assuming there are 6 types of candies
+            for j in range (4):
+                if self.is_colloc:
+                    image = pygame.image.load(f'assets/colloc/candy_{i}.png')
+                else:
+                    image = pygame.image.load(f'assets/candy/{types[j]}_{i}.png')
+                image = pygame.transform.scale(image, (int(width), int(height)))
+                candy_images[i - 1][ j] = image
+        candy_images[6][0] = pygame.transform.scale(pygame.image.load('assets/candy/candy_7.png'), (int(width), int(height)))
 
         run = True
         i_clicked = -1 
@@ -82,6 +87,12 @@ class Viz_2_player:
         all_move = None
         visible_menu = False
         slot_save = None
+        self.board.score = 0
+        self.board_AI.score = 0
+
+        mcts = MCTS_CandyCrush_Complex(self.board_AI, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = True, write_log_file = False)
+        best_move, all_move = mcts.best_move(return_all=True, N_random = self.N_RANDOM)
+
         while run:
             
             pygame.time.delay(50)
@@ -103,13 +114,16 @@ class Viz_2_player:
             def run_mcts_on_AI_board(self, win):
                 # Put a text to show that the AI is thinking
                 font = pygame.font.Font(None, 36)
+                pygame.draw.rect(win, (250, 0, 0), (self.screenwidth + 10, 36, 190, 25))
                 text = font.render(f"AI is thinking...", True, (255, 255, 255))
-                win.blit(text, (self.screenwidth + 10, 50))
+                win.blit(text, (self.screenwidth + 10, 36))
                 pygame.display.update()
 
                 mcts = MCTS_CandyCrush_Complex(self.board_AI, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = True, write_log_file = False)
                 best_move, all_move = mcts.best_move(return_all=True, N_random = self.N_RANDOM)
-                highlight_move = True
+                return best_move
+        
+            def show_mcts_on_AI_board(self, win,best_move):
                 # Show the best move on the board
                 self.highlight_move_on_win(win,AI_x_cases,AI_y_cases,width,height,best_move)
                 pygame.display.update() 
@@ -120,8 +134,8 @@ class Viz_2_player:
 
             if keys[pygame.K_m]:
                 clicked = False
-                run_mcts_on_AI_board(self, win)
-            
+                best_move=run_mcts_on_AI_board(self, win)
+                show_mcts_on_AI_board(self, win, best_move)
             
 
             if keys[pygame.K_c]:
@@ -204,66 +218,62 @@ class Viz_2_player:
                     board_ai_copy = self.board_AI.copy()
                     swapped=self.action.swap(i_clicked, j_clicked, i_clicked - 1, j_clicked, step_by_step=True)
                     clicked = False
-                    display_action = True
-                    highlight_move = False
-                    all_move = None
                     if swapped:
-                        run_mcts_on_AI_board(self, win)
+                        display_action = True
+                        highlight_move = False
+                        all_move = None
             if clicked and keys[pygame.K_DOWN]:
                 if i_clicked + 1 < self.board.N:
-                    print(i_clicked, j_clicked)
                     board_copy = self.board.copy()
                     board_ai_copy = self.board_AI.copy()
                     swapped=self.action.swap(i_clicked, j_clicked, i_clicked + 1, j_clicked, step_by_step=True)
                     clicked = False
-                    display_action = True
-                    highlight_move = False
-                    all_move = None
                     if swapped:
-                        run_mcts_on_AI_board(self, win)
+                        display_action = True
+                        highlight_move = False
+                        all_move = None
             if clicked and keys[pygame.K_LEFT]:
                 if j_clicked - 1 >= 0:
                     board_copy = self.board.copy()
                     board_ai_copy = self.board_AI.copy()
                     swapped=self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked - 1, step_by_step=True)
                     clicked = False
-                    display_action = True
-                    highlight_move = False
-                    all_move = None
                     if swapped:
-                        run_mcts_on_AI_board(self, win)
+                        display_action = True
+                        highlight_move = False
+                        all_move = None
             if clicked and keys[pygame.K_RIGHT]:
                 if j_clicked + 1 < self.board.M:
                     board_copy = self.board.copy()
                     board_ai_copy = self.board_AI.copy()
                     swapped=self.action.swap(i_clicked, j_clicked, i_clicked, j_clicked + 1, step_by_step=True)
                     clicked = False
-                    display_action = True
-                    highlight_move = False
-                    all_move = None
                     if swapped:
-                        run_mcts_on_AI_board(self, win)
+                        display_action = True
+                        highlight_move = False
+                        all_move = None
 
             if display_action==False:
                 self.board_visual(candy_images,win,x_cases,width,y_cases,height,AI_x_cases,AI_y_cases,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move, visible_menu,time_delay, save_slot=slot_save)
                 pygame.display.update()
 
-
-            while display_action:
-                self.board_visual(candy_images,win,x_cases,width,y_cases,height,AI_x_cases,AI_y_cases)
-                pygame.display.update()
+            if display_action:
+                while display_action:
+                    self.board_visual(candy_images,win,x_cases,width,y_cases,height,AI_x_cases,AI_y_cases)
+                    pygame.display.update()
+                    pygame.time.delay(time_delay)
+                    fall1=self.board.make_it_fall()
+                    fall2=self.board.fill_random()
+                    fall=fall1+fall2
+                    self.board_visual(candy_images,win,x_cases,width,y_cases,height,AI_x_cases,AI_y_cases,)
+                    pygame.display.update()
+                    pygame.time.delay(time_delay)
+                    display_action=self.board.update(fall=fall,step_by_step=True)
                 pygame.time.delay(time_delay)
-                fall1=self.board.make_it_fall()
-                fall2=self.board.fill_random()
-                fall=fall1+fall2
-                self.board_visual(candy_images,win,x_cases,width,y_cases,height,AI_x_cases,AI_y_cases,)
-                pygame.display.update()
-                pygame.time.delay(time_delay)
-                display_action=self.board.update(fall=fall,step_by_step=True)
+                show_mcts_on_AI_board(self, win, best_move)
+                best_move=run_mcts_on_AI_board(self, win)
 
-            
-
-            
+             
             if keys[pygame.K_s]:
                 clicked = False
                 self.board.empty()
@@ -271,6 +281,7 @@ class Viz_2_player:
                 self.board.update()
                 self.action = Action(self.board)
                 self.board_AI = self.board.copy()
+                best_move, all_move = mcts.best_move(return_all=True, N_random = self.N_RANDOM)
                 self.board.score = 0 # Et non mon grand !
                 self.board_AI.score = 0
                 self.AI_action = Action(self.board_AI)
@@ -283,6 +294,7 @@ class Viz_2_player:
                 self.action = Action(self.board)
                 self.board_AI = board_ai_copy
                 self.AI_action = Action(self.board_AI)
+                best_move, all_move = mcts.best_move(return_all=True, N_random = self.N_RANDOM)
 
 
             pygame.display.update()
@@ -312,16 +324,18 @@ class Viz_2_player:
                 if self.board.board[i, j] != Candy(0,'empty'):
                     candy_index = int(self.board.board[i, j].id) - 1
                     candy_type = self.board.board[i, j].type
+                    candy_type_index = TYPE_TO_ID[candy_type] if candy_type!='disco' else 0
                     if clicked and i == i_clicked and j == j_clicked:
                         pygame.draw.rect(win, (255, 255, 255), (x_cases[j] - width / 2 - 2, y_cases[i] - height / 2 - 2, width + 4, height + 4))
-                    win.blit(candy_images[candy_index], (x_cases[j] - width / 2, y_cases[i] - height / 2))
-                    # Add horizontal stripes for raye_hor,raye_ver and sachet typed candies
-                    if candy_type == 'raye_hor':
-                        pygame.draw.line(win, (255, 255, 255), (x_cases[j] - width / 2, y_cases[i]), (x_cases[j] + width / 2, y_cases[i]), 2)
-                    if candy_type=='raye_ver':
-                        pygame.draw.line(win, (255, 255, 255), (x_cases[j], y_cases[i] - height / 2), (x_cases[j], y_cases[i] + height / 2), 2)
-                    if candy_type=='sachet':
-                        pygame.draw.rect(win, (255, 255, 255), (x_cases[j] - width / 4, y_cases[i] - height / 4, width / 2, height / 2), 2)
+                    win.blit(candy_images[candy_index][candy_type_index], (x_cases[j] - width / 2, y_cases[i] - height / 2))
+                    if self.is_colloc:
+                        # Add horizontal stripes for raye_hor,raye_ver and sachet typed candies
+                        if candy_type == 'raye_hor':
+                            pygame.draw.line(win, (255, 255, 255), (x_cases[j] - width / 2, y_cases[i]), (x_cases[j] + width / 2, y_cases[i]), 2)
+                        if candy_type=='raye_ver':
+                            pygame.draw.line(win, (255, 255, 255), (x_cases[j], y_cases[i] - height / 2), (x_cases[j], y_cases[i] + height / 2), 2)
+                        if candy_type=='sachet':
+                            pygame.draw.rect(win, (255, 255, 255), (x_cases[j] - width / 4, y_cases[i] - height / 4, width / 2, height / 2), 2)
                 else:
                     pygame.draw.circle(win, (250, 0, 0), (x_cases[j], y_cases[i]), 20)
 
@@ -331,14 +345,16 @@ class Viz_2_player:
                 if self.board_AI.board[i, j] != Candy(0,'empty'):
                     candy_index = int(self.board_AI.board[i, j].id) - 1
                     candy_type = self.board_AI.board[i, j].type
-                    win.blit(candy_images[candy_index], (AI_x_cases[j] - width / 2, AI_y_cases[i] - height / 2))
-                    # Add horizontal stripes for raye_hor,raye_ver and sachet typed candies
-                    if candy_type == 'raye_hor':
-                        pygame.draw.line(win, (255, 255, 255), (AI_x_cases[j] - width / 2, AI_y_cases[i]), (AI_x_cases[j] + width / 2, AI_y_cases[i]), 2)
-                    if candy_type=='raye_ver':
-                        pygame.draw.line(win, (255, 255, 255), (AI_x_cases[j], AI_y_cases[i] - height / 2), (AI_x_cases[j], AI_y_cases[i] + height / 2), 2)
-                    if candy_type=='sachet':
-                        pygame.draw.rect(win, (255, 255, 255), (AI_x_cases[j] - width / 4, AI_y_cases[i] - height / 4, width / 2, height / 2), 2)
+                    candy_type_index = TYPE_TO_ID[candy_type] if candy_type!='disco' else 0
+                    win.blit(candy_images[candy_index][candy_type_index], (AI_x_cases[j] - width / 2, AI_y_cases[i] - height / 2))
+                    if self.is_colloc:
+                        # Add horizontal stripes for raye_hor,raye_ver and sachet typed candies
+                        if candy_type == 'raye_hor':
+                            pygame.draw.line(win, (255, 255, 255), (AI_x_cases[j] - width / 2, AI_y_cases[i]), (AI_x_cases[j] + width / 2, AI_y_cases[i]), 2)
+                        if candy_type=='raye_ver':
+                            pygame.draw.line(win, (255, 255, 255), (AI_x_cases[j], AI_y_cases[i] - height / 2), (AI_x_cases[j], AI_y_cases[i] + height / 2), 2)
+                        if candy_type=='sachet':
+                            pygame.draw.rect(win, (255, 255, 255), (AI_x_cases[j] - width / 4, AI_y_cases[i] - height / 4, width / 2, height / 2), 2)
                 else:
                     pygame.draw.circle(win, (250, 0, 0), (AI_x_cases[j], AI_y_cases[i]), 20)
 
@@ -394,6 +410,13 @@ class Viz_2_player:
         win.blit(text, (10, 10))
         text = font.render(f"AI Score: {self.board_AI.score}", True, (255, 255, 255))
         win.blit(text, (self.screenwidth + 10, 10))
+
+                 
+        font = pygame.font.Font(None, 36)
+        text = font.render(f"AI is ready!", True, (255, 255, 255))
+        pygame.draw.rect(win, (0, 250, 0), (self.screenwidth + 10, 36, 136, 25))
+        win.blit(text, (self.screenwidth + 10, 36))
+        pygame.display.update()
 
 
 
