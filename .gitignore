@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 log/
+build/
 
 # Ignore macOS system files
 .DS_Store
