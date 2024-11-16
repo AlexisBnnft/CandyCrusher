@@ -99,9 +99,9 @@ class MCTS_CandyCrush_Complex:
 
     def run_simulation(self, current_board=None, N_random = 10, depth = 0):
         """Simulates a game sequence from the root state."""
-        
         if current_board is None:
             current_board = deepcopy(self.root_board)  # Start with the root board for the first call
+        init_board_score = current_board.score
         state = current_board.state()
         legal_moves = current_board.get_legal_moves()
         if not legal_moves:
@@ -110,7 +110,7 @@ class MCTS_CandyCrush_Complex:
         if (state, init_move) not in self.state_action_to_board.keys():
             self.logger.info(f"Initializing state-action pair: {(hex(state), init_move)}")
             self.state_action_to_board[(state, init_move)] = []
-        if len(self.state_action_to_board[state, init_move]) > N_random:
+        if len(self.state_action_to_board[state, init_move]) > N_random-1:
             self.logger.info(f"We have enough randomness on this {(state,init_move)}")
             # Choose a random state that we saw before
             self.logger.info(f"Our self.state_action_to_board is {self.state_action_to_board[(state, init_move)]}")
@@ -123,7 +123,7 @@ class MCTS_CandyCrush_Complex:
             current_board.update()
             self.logger.info(f"New board state after move: {hex(current_board.state())}, Score: {current_board.score}")
             self.state_action_to_board[state, init_move].append(current_board.copy())
-            self.logger.info(f"Updating state-action pair: {(hex(state), init_move)} to add a new state -> {hex(current_board.state())}")
+            # self.logger.info(f"Updating state-action pair: {(hex(state), init_move)} to add a new state -> {hex(current_board.state())}")
         # If the new state has not been visited before, run a simulation
         if current_board.state() not in self.N_state:
             rollout_board = deepcopy(current_board)
@@ -132,26 +132,23 @@ class MCTS_CandyCrush_Complex:
             # Expansion
             self.N_state[current_board.state()] = 1
             for iter in range(self.N_rollout):
-                legal_moves = current_board.get_legal_moves()
+                legal_moves = rollout_board.get_legal_moves()
                 if not legal_moves:
                     break
                 move = random.choice(legal_moves)
                 Action(rollout_board).swap(*move[0], *move[1])
                 rollout_board.update()
                 # Increase depth
-                depth += 1 
             # Calculate the reward at the end of the simulation
-            reward = current_board.score
-            self.logger.info(f"End of simulation with depth {depth}. Reward (Score): {reward}")
-            self.N[(current_board.state(), init_move)] = self.N.get((current_board.state(), init_move), 0) + 1
-            self.Q[(current_board.state(), init_move)] = (self.Q.get((current_board.state(), init_move), 0) * (self.N[(current_board.state(), init_move)] - 1) + reward) / self.N[(current_board.state(), init_move)]
+            reward = (rollout_board.score - init_board_score)/(self.N_rollout + 1) # We divide by the number of move made in the rollout + the initial
+            self.logger.info(f"End of Random Rollout. Reward of this random rollout ({self.N_rollout}) (Score): {reward}, gone from {init_board_score} to {rollout_board.score}")
 
             # Backpropagate reward
             self.N[(state, init_move)] = self.N.get((state, init_move), 0) + 1
+            temp = self.Q.get((state, init_move), 0) # Exclusively for logging
             self.Q[(state, init_move)] = (self.Q.get((state, init_move), 0) * (self.N[(state, init_move)] - 1) + reward) / self.N[(state, init_move)]
-
+            self.logger.info(f"Q value was {temp} and now {self.Q[(state, init_move)]}")
             self.N_state[state] = self.N_state.get(state, 0) + 1
-            self.logger.info(f"We know have in Q and N a number of states and moves: , {len(self.Q)}")
             return reward
         
         # If the new state has been visited before, run a simulation
@@ -160,17 +157,23 @@ class MCTS_CandyCrush_Complex:
             #self.logger.info(current_board.display())
 
             current_score = current_board.score
-            reward = self.run_simulation(current_board=current_board.copy(), depth = depth + 1, N_random = N_random)
-            true_reward = reward - current_score
+            depth += 1 # We increase the depth as we go deeper in the simulation
+            reward = self.run_simulation(current_board=current_board.copy(), depth = depth, N_random = N_random)
+            # We divide by the number of move made in the rollout + the depth in. 
+            # This is kind of a weighted average of the reward, taking 
+            true_reward = (reward * (depth + self.N_rollout) + (current_score - init_board_score) )/ (depth + self.N_rollout + 1)
+
+            self.logger.info(f"Reward of deeper {reward}, and of init move ({current_score - init_board_score}).")
+            self.logger.info(f"We backpropagate {true_reward} to ({hex(state), init_move}).")
             # Backpropagate reward
-            self.N[(current_board.state(), init_move)] = self.N.get((current_board.state(), init_move), 0) + 1
-            self.Q[(current_board.state(), init_move)] = (self.Q.get((current_board.state(), init_move), 0) * (self.N[(current_board.state(), init_move)] - 1) + true_reward) / self.N[(current_board.state(), init_move)]
             self.N_state[current_board.state()] = self.N_state.get(current_board.state(), 0) + 1
             
             self.N[(state, init_move)] = self.N.get((state, init_move), 0) + 1
-            self.Q[(state, init_move)] = (self.Q.get((state, init_move), 0) * (self.N[(state, init_move)] - 1) + reward) / self.N[(state, init_move)]
+            temp = self.Q.get((state, init_move), 0)
+            self.Q[(state, init_move)] = (self.Q.get((state, init_move), 0) * (self.N[(state, init_move)] - 1) + true_reward) / self.N[(state, init_move)]
+            self.logger.info(f"We had {temp} and now {self.Q[(state, init_move)]}.")
             self.N_state[state] = self.N_state.get(state, 0) + 1
-            return reward
+            return true_reward
         
             
     def select_move(self, state, legal_moves):
@@ -193,15 +196,15 @@ class MCTS_CandyCrush_Complex:
 if __name__ == "__main__":
     random.seed(42)
     np.random.seed(42)
-    b = Board(5, 5)
+    b = Board(6, 6)
     b.fill_random()
     b.update()
-    
+    b.score = 0
     # Initialize the MCTS with the given board `b` and log output to a file
     mcts = MCTS_CandyCrush_Complex(b, exploration_param=1000, N_rollout=4, n_simulation=1000, no_log = False, write_log_file=True)
     
     # Run MCTS to find the best move with step-by-step logs
-    best_move = mcts.best_move()  # Adjust number of simulations if needed
+    best_move = mcts.best_move(N_random=1)  # Adjust number of simulations if needed
     print(f"\Possible moves: {b.get_legal_moves()}")
     # Display the mean reward for each possible move
     reward_list = []

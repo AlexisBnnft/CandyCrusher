@@ -11,7 +11,7 @@ def main():
     parser.add_argument('-nsim', '--n_simulation', type=int, default=N_SIMULATION, help='Number of simulations for MCTS')
     parser.add_argument('-nrand', '--n_random', type=int, default=N_RANDOM, help='Number of random moves for MCTS')
     args = parser.parse_args()
-
+    
     b = Board(7, 7)
     a = Action(b)
     b.fill_random()
