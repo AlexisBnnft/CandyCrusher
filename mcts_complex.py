@@ -67,7 +67,7 @@ class MCTS_CandyCrush_Complex:
 
     def best_move(self, return_all = False, N_random = 3):
         """Runs simulations to find the best move from the root state."""
-        for i in tqdm(range(self.n_simulation)):
+        for i in range(self.n_simulation):
             self.logger.info(f"\n--- Simulation {i + 1} ---")
             self.run_simulation(N_random=N_random)
 
