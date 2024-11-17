@@ -15,10 +15,10 @@ from mcts_complex import MCTS_CandyCrush_Complex
 from tqdm import tqdm
 
 ### MCTS PARAM FOR VIZ
-EXPLORATION_PARAM = 5000
-N_ROLLOUT = 3
+EXPLORATION_PARAM = 500
+N_ROLLOUT = 2
 N_SIMULATION = 3000
-N_RANDOM = 1
+N_RANDOM = 2
 
 
 class Viz:
@@ -90,10 +90,10 @@ class Viz:
 
         x_mcts_mode = 0
         y_mcts_mode = screenheight + 30
-        slider_simu = Slider(win, x_mcts_mode+180, y_mcts_mode, 180, 10, min=500, max=10000, step=500, initial=self.N_SIMULATION)
+        slider_simu = Slider(win, x_mcts_mode+180, y_mcts_mode, 180, 10, min=500, max=4000, step=500, initial=self.N_SIMULATION)
         slider_simu_output = TextBox(win, x_mcts_mode+180+5, y_mcts_mode-30, 175, 20, fontSize=12)
         slider_simu_output.disable()
-        slider_explo = Slider(win, x_mcts_mode+380, y_mcts_mode, 180, 10, min=500, max=10000, step=500, initial=self.EXPLORATION_PARAM)
+        slider_explo = Slider(win, x_mcts_mode+380, y_mcts_mode, 180, 10, min=100, max=2000, step=200, initial=self.EXPLORATION_PARAM)
         slider_explo_output = TextBox(win, x_mcts_mode+380+5, y_mcts_mode-30, 175, 20, fontSize=12)
         slider_explo_output.disable()
 

@@ -12,10 +12,10 @@ from mcts_complex import MCTS_CandyCrush_Complex
 from tqdm import tqdm
 
 ### MCTS PARAM FOR VIZ_2_player
-EXPLORATION_PARAM = 5000
-N_ROLLOUT = 3
-N_SIMULATION = 1000
-N_RANDOM = 1
+EXPLORATION_PARAM = 500
+N_ROLLOUT = 2
+N_SIMULATION = 2000
+N_RANDOM = 2
 
 
 class Viz_2_player:
