@@ -78,6 +78,7 @@ class Board:
         # Flatten the board and concatenate each cell's value into a single string
         flattened = ''.join(str(cell.id) + str(TYPE_TO_ID[(cell.type)]) for row in self.board for cell in row)
         return int(flattened)
+    
     def fill_random(self):
         """
         Fill empty spaces in the board with random candies.

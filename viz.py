@@ -17,7 +17,7 @@ from tqdm import tqdm
 ### MCTS PARAM FOR VIZ
 EXPLORATION_PARAM = 500
 N_ROLLOUT = 2
-N_SIMULATION = 3000
+N_SIMULATION = 2000
 N_RANDOM = 2
 
 
@@ -93,7 +93,7 @@ class Viz:
         slider_simu = Slider(win, x_mcts_mode+180, y_mcts_mode, 180, 10, min=500, max=4000, step=500, initial=self.N_SIMULATION)
         slider_simu_output = TextBox(win, x_mcts_mode+180+5, y_mcts_mode-30, 175, 20, fontSize=12)
         slider_simu_output.disable()
-        slider_explo = Slider(win, x_mcts_mode+380, y_mcts_mode, 180, 10, min=100, max=2000, step=200, initial=self.EXPLORATION_PARAM)
+        slider_explo = Slider(win, x_mcts_mode+380, y_mcts_mode, 180, 10, min=100, max=2000, step=100, initial=self.EXPLORATION_PARAM)
         slider_explo_output = TextBox(win, x_mcts_mode+380+5, y_mcts_mode-30, 175, 20, fontSize=12)
         slider_explo_output.disable()
 
@@ -128,7 +128,7 @@ class Viz:
             if mcts_mode:
                 if keys[pygame.K_p]:
                     clicked = False
-                    mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = False, write_log_file = True)
+                    mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = True, write_log_file = False)
                     best_move, all_move = mcts.best_move(return_all=True, N_random = self.N_RANDOM)
                     highlight_move = True
                 slider1=slider_simu.getValue()
