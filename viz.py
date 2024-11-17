@@ -128,7 +128,7 @@ class Viz:
             if mcts_mode:
                 if keys[pygame.K_p]:
                     clicked = False
-                    mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = True, write_log_file = False)
+                    mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = False, write_log_file = True)
                     best_move, all_move = mcts.best_move(return_all=True, N_random = self.N_RANDOM)
                     highlight_move = True
                 slider1=slider_simu.getValue()

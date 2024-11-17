@@ -166,8 +166,8 @@ class MCTS_CandyCrush_Complex:
             self.logger.info(f"Reward of deeper {reward}, and of init move ({current_score - init_board_score}).")
             self.logger.info(f"We backpropagate {true_reward} to ({hex(state), init_move}).")
             # Backpropagate reward
-            self.N_state[current_board.state()] = self.N_state.get(current_board.state(), 0) + 1
-            
+            #self.N_state[current_board.state()] = self.N_state.get(current_board.state(), 0) + 1
+            self.logger.info(f"Updated state visit count: {hex(current_board.state())} = {self.N_state[current_board.state()]}")
             self.N[(state, init_move)] = self.N.get((state, init_move), 0) + 1
             temp = self.Q.get((state, init_move), 0)
             self.Q[(state, init_move)] = (self.Q.get((state, init_move), 0) * (self.N[(state, init_move)] - 1) + true_reward) / self.N[(state, init_move)]
