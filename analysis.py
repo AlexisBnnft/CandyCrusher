@@ -33,7 +33,7 @@ def parse_board_file(file_path):
     return data
 
 
-def get_df_from_board_files(folder_path = "generated"):
+def get_df_from_board_files(folder_path = "generated/v1"):
     # Process all files
     all_rows = []
     for file_name in os.listdir(folder_path):
