@@ -50,6 +50,8 @@ def get_df_from_board_files(folder_path = "generated/v1"):
 
 def rename_columns(df):
     # Rename columns
+    df.columns = df.columns.astype(str)
+    
     df.columns = df.columns.str.replace("Metadata_1", "Explo")
     df.columns = df.columns.str.replace("Metadata_2", "n_rollout")
     df.columns = df.columns.str.replace("Metadata_3", "n_simulation")
