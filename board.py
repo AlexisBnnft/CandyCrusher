@@ -577,3 +577,32 @@ def read_board_from_file(file_path):
             board.board[i - 1, j] = Candy(int(candy_id), candy_type)
 
     return board
+
+def state_to_board(state, N, M):
+    """
+    Convert a unique integer hash back into a Board object.
+    
+    Args:
+        state (int): The unique integer representing the board state.
+        N (int): The number of rows in the board.
+        M (int): The number of columns in the board.
+    
+    Returns:
+        Board: The reconstructed Board object.
+    """
+    # Convert the state integer back to a string
+    state_str = str(state)
+    
+    # Initialize the board
+    board = Board(N, M)
+    
+    # Parse the string and reconstruct the board
+    index = 0
+    for i in range(N):
+        for j in range(M):
+            candy_id = int(state_str[index])
+            candy_type = ID_TO_TYPE[int(state_str[index + 1])]
+            board.board[i, j] = Candy(candy_id, candy_type)
+            index += 2
+    
+    return board
