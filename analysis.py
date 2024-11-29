@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 from board import state_to_board, Board, Action
-from viz import Viz
 
 def parse_board_file(file_path):
     with open(file_path, 'r') as file:

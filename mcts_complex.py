@@ -5,9 +5,10 @@ from copy import deepcopy
 from board import Action, Board
 import numpy as np
 from tqdm import tqdm
+from nn import predict
 
 class MCTS_CandyCrush_Complex:
-    def __init__(self, board, fixed_depth=False, exploration_param=1.4, N_rollout=5, n_simulation=100, no_log = True, write_log_file = False):
+    def __init__(self, board, fixed_depth=False, exploration_param=1.4, N_rollout=5, n_simulation=100, no_log = True, write_log_file = False, model = None):
         """
         Initialize the MCTS with the given parameters.
 
@@ -26,6 +27,7 @@ class MCTS_CandyCrush_Complex:
         self.n_simulation = n_simulation
         self.state_action_to_board = {}
         self.fixed_depth = fixed_depth
+        self.model = model
 
         # Set up logging
         if no_log:
@@ -68,7 +70,7 @@ class MCTS_CandyCrush_Complex:
 
     def best_move(self, return_all = False, N_random = 3):
         """Runs simulations to find the best move from the root state."""
-        for i in range(self.n_simulation):
+        for i in tqdm(range(self.n_simulation)):
             self.logger.info(f"\n--- Simulation {i + 1} ---")
             self.run_simulation(N_random=N_random)
 
@@ -133,18 +135,22 @@ class MCTS_CandyCrush_Complex:
             # Expansion
             self.N_state[current_board.state()] = 1
             depth_rollout = self.N_rollout if self.fixed_depth==False else self.fixed_depth-depth
-            for iter in range(depth_rollout):
-                legal_moves = rollout_board.get_legal_moves()
-                if not legal_moves:
-                    break
-                move = random.choice(legal_moves)
-                Action(rollout_board).swap(*move[0], *move[1])
-                rollout_board.update()
-            dist_from_bottom=depth_rollout
-            # Calculate the reward at the end of the simulation
-            reward = (rollout_board.score - init_board_score)/(depth_rollout + 1) # We divide by the number of move made in the rollout + the initial
-            self.logger.info(f"End of Random Rollout. Reward of this random rollout ({depth_rollout}) (Score): {reward}, gone from {init_board_score} to {rollout_board.score}")
-
+            if self.model == None:
+                for iter in range(depth_rollout):
+                    legal_moves = rollout_board.get_legal_moves()
+                    if not legal_moves:
+                        break
+                    move = random.choice(legal_moves)
+                    Action(rollout_board).swap(*move[0], *move[1])
+                    rollout_board.update()
+                dist_from_bottom=depth_rollout
+                # Calculate the reward at the end of the simulation
+                reward = (rollout_board.score - init_board_score)/(depth_rollout + 1) # We divide by the number of move made in the rollout + the initial
+                self.logger.info(f"End of Random Rollout. Reward of this random rollout ({depth_rollout}) (Score): {reward}, gone from {init_board_score} to {rollout_board.score}")
+            else:
+                rb = rollout_board.copy()
+                reward = predict(rb.board, self.model)
+                self.logger.info(f"NO RANDOM ROLLOUT. NN Predicted reward: {reward}")
             # Backpropagate reward
             self.N[(state, init_move)] = self.N.get((state, init_move), 0) + 1
             temp = self.Q.get((state, init_move), 0) # Exclusively for logging
@@ -161,7 +167,7 @@ class MCTS_CandyCrush_Complex:
             depth += 1 # We increase the depth as we go deeper in the simulation
             if self.fixed_depth!=False and depth > self.fixed_depth:
                 self.logger.info("Maximum depth reached. We stop here.")
-                return 0,0
+                return current_score - init_board_score,0
             reward, dist_from_bottom = self.run_simulation(current_board=current_board.copy(), depth = depth, N_random = N_random, dist_from_bottom = dist_from_bottom)
             dist_from_bottom += 1
             # dist_from_bottom is the distance from current_board to the bottom of the tree
@@ -206,10 +212,10 @@ if __name__ == "__main__":
     b.update()
     b.score = 0
     # Initialize the MCTS with the given board `b` and log output to a file
-    mcts = MCTS_CandyCrush_Complex(b, exploration_param=1000, N_rollout=4, n_simulation=1000, no_log = False, write_log_file=True, fixed_depth=5)
+    mcts = MCTS_CandyCrush_Complex(b, exploration_param=1000, N_rollout=4, n_simulation=3000, no_log = False, write_log_file=True, fixed_depth=5)
     
     # Run MCTS to find the best move with step-by-step logs
-    best_move = mcts.best_move(N_random=1)  # Adjust number of simulations if needed
+    best_move = mcts.best_move(N_random=3)  # Adjust number of simulations if needed
     print(f"Possible moves: {b.get_legal_moves()}")
     # Display the mean reward for each possible move
     reward_list = []

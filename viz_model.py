@@ -8,12 +8,14 @@ import pygame
 import pygame_widgets
 from pygame_widgets.slider import Slider
 from pygame_widgets.textbox import TextBox
+from copy import deepcopy
 import sys
 import numpy as np
 from mcts import MCTS_CandyCrush
 from mcts_complex import MCTS_CandyCrush_Complex
 from tqdm import tqdm
-from nn import load_model
+from nn import preprocess_board
+import torch
 ### MCTS PARAM FOR VIZ
 EXPLORATION_PARAM = 500
 N_ROLLOUT = 2
@@ -38,7 +40,7 @@ class Viz:
 
 
     
-    def Visualize(self):
+    def Visualize(self, model):
         """
         Display the current state of the board.
         """
@@ -51,6 +53,7 @@ class Viz:
         self.screenwidth = screenwidth
         self.screenheight = screenheight
         time_delay = 100
+        
         win = pygame.display.set_mode((self.screenwidth, self.screenheight))
         pygame.display.set_caption("Candy Crush (official version)")
 
@@ -86,7 +89,6 @@ class Viz:
         slot_save = None
         self.board.score = 0
         mcts_mode = False
-        model=None
 
 
         x_mcts_mode = 0
@@ -94,13 +96,28 @@ class Viz:
         slider_simu = Slider(win, x_mcts_mode+180, y_mcts_mode, 180, 10, min=500, max=4000, step=500, initial=self.N_SIMULATION)
         slider_simu_output = TextBox(win, x_mcts_mode+180+5, y_mcts_mode-30, 175, 20, fontSize=12)
         slider_simu_output.disable()
-        slider_explo = Slider(win, x_mcts_mode+380, y_mcts_mode, 180, 10, min=100, max=4000, step=100, initial=self.EXPLORATION_PARAM)
+        slider_explo = Slider(win, x_mcts_mode+380, y_mcts_mode, 180, 10, min=100, max=2000, step=100, initial=self.EXPLORATION_PARAM)
         slider_explo_output = TextBox(win, x_mcts_mode+380+5, y_mcts_mode-30, 175, 20, fontSize=12)
         slider_explo_output.disable()
 
         while run:
             
             pygame.time.delay(50)
+            
+            processed_board = preprocess_board(deepcopy(self.board.board))
+            device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+            model.to(device)
+            # Convert to tensor and add batch dimension
+            input_tensor = torch.tensor(processed_board, dtype=torch.float32).unsqueeze(0).to(device)  # Shape: (1, 7, 7, 12)
+
+            # Load the trained model
+            model.eval()
+
+            # Perform inference
+            with torch.no_grad():
+                prediction_score = model(input_tensor.permute(0, 3, 1, 2))  # Adjust dimensions to (N, C, H, W)
+                print(prediction_score  )
+                self.board.score = prediction_score.item()
 
             events = pygame.event.get()
 
@@ -129,8 +146,7 @@ class Viz:
             if mcts_mode:
                 if keys[pygame.K_p]:
                     clicked = False
-                    self.action = Action(self.board)
-                    mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = True, write_log_file = False, fixed_depth=5, model=model)
+                    mcts = MCTS_CandyCrush_Complex(self.board, exploration_param=self.EXPLORATION_PARAM, N_rollout=self.N_ROLLOUT, n_simulation=self.N_SIMULATION, no_log = True, write_log_file = False, fixed_depth=5)
                     best_move, all_move = mcts.best_move(return_all=True, N_random = self.N_RANDOM)
                     highlight_move = True
                 slider1=slider_simu.getValue()
@@ -155,13 +171,6 @@ class Viz:
                     slot_save = 0
                 if slot_save > 9:
                     slot_save = 0
-
-            if keys[pygame.K_n]:
-                if model==None:
-                    model = load_model('model.pth', device='mps')
-                else:
-                    model=None
-
             
             if keys[pygame.K_v]:
                 # Paste the board from the file
@@ -256,7 +265,7 @@ class Viz:
                     all_move = None
 
             if display_action==False:
-                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move, visible_menu,time_delay, save_slot=slot_save,mcts_mode=mcts_mode, model=model)
+                self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move, visible_menu,time_delay, save_slot=slot_save,mcts_mode=mcts_mode)
                 pygame.display.update()
 
 
@@ -296,7 +305,8 @@ class Viz:
         sys.exit()
 
 
-    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None, all_move = None, visible_menu = False, time_delay=None, save_slot = None,mcts_mode = False, model = None):
+    def board_visual(self,candy_images,win,x_cases,width,y_cases,height,clicked=False,i_clicked=0,j_clicked=0,highlight_move=False,best_move=None, all_move = None, visible_menu = False, time_delay=None, save_slot = None,mcts_mode = False):
+
         win.fill((0, 0, 0))
         win.blit(pygame.image.load('assets/background/image.png'), (0, 0))
         if highlight_move:
@@ -367,8 +377,6 @@ class Viz:
             win.blit(shortcut_text, (x_menu, y_menu+300))
             shortcut_text = font.render(f"Arrows: Move the candy", True, (255, 255, 255))
             win.blit(shortcut_text, (x_menu, y_menu+330))
-            shortcut_text = font.render(f"N: NN Mode: {0 if model==None else 1}", True, (255, 255, 255))
-            win.blit(shortcut_text, (x_menu, y_menu+360))
 
 
         if mcts_mode:
