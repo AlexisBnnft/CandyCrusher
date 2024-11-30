@@ -9,7 +9,7 @@ from analysis import *
 from torch.utils.data import random_split
 import matplotlib.pyplot as plt
 
-device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+device = torch.device("cpu")
 print(f"Using device: {device}")
 
 # Example unique IDs and types
