@@ -60,6 +60,8 @@ class Master:
         
         if self.strategy == 'random':
             return self.random_strategy()
+        elif self.strategy == 'greedy':
+            return self.greedy_strategy()
         elif self.strategy == 'mcts_base':
             return self.mcts_strategy(params)
         elif self.strategy == 'mcts_fixed_depth':
@@ -68,8 +70,6 @@ class Master:
             return self.offline_strategy()
         elif self.strategy == 'combined':
             return self.combined_strategy(params)
-        elif self.strategy == 'greedy':
-            return self.greedy_strategy(params)
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
         
