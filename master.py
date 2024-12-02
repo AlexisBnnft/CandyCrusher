@@ -91,11 +91,10 @@ class Master:
     def mcts_strategy(self, params, fixed_depth=False):
         ## GROS CHANGE HARDCODED POUR POUVOIR FAIRE SENSITIVER ANALYSIS SI CA BEUG FAUT JUSTE ENLEVER LE BAIL N RANDOM
         params_excluding_last = {k: params[k] for k in list(params)[:-1]}
-        N_random = params['N_random']
         if fixed_depth:
             params['fixed_depth'] = params.get('fixed_depth', 5)
         mcts = MCTS_CandyCrush_Complex(self.board, **params_excluding_last)
-        return mcts.best_move(N_random=N_random)
+        return mcts.best_move(N_random=params['N_random'])
     
     def offline_strategy(self):
         legal_moves = self.board.get_legal_moves()
@@ -130,8 +129,7 @@ class Master:
         return best_move
     
     def combined_strategy(self, params):
-        params_excluding_last = {k: params[k] for k in list(params)[:-1]}
-        N_random = params['N_random']
         params['model'] = self.model
+        params_excluding_last = {k: params[k] for k in list(params)[:-1]}
         mcts = MCTS_CandyCrush_Complex(self.board, **params_excluding_last)
-        return mcts.best_move(N_random = N_random)
+        return mcts.best_move(N_random = params['N_random'])
