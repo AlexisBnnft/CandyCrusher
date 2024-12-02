@@ -9,7 +9,7 @@ from board import Action
 strategy_params = {
     'random': {},
     'mcts_base': {
-        'exploration_param': 2000,
+        'exploration_param': 5000,
         'N_rollout': 4,
         'n_simulation': 1500,
         'no_log': True,
@@ -17,7 +17,7 @@ strategy_params = {
         'model': None
     },
     'mcts_fixed_depth': {
-        'exploration_param': 2000,
+        'exploration_param': 5000,
         'N_rollout': 4,
         'n_simulation': 1500,
         'fixed_depth': 4,
@@ -29,7 +29,7 @@ strategy_params = {
         'model_path': 'model.pth'
     },
     'combined': {
-        'exploration_param': 2000,
+        'exploration_param': 5000,
         'N_rollout': 4,
         'n_simulation': 1500,
         'fixed_depth': 4,
@@ -83,10 +83,13 @@ class Master:
         return random.choice(legal_moves)
     
     def mcts_strategy(self, params, fixed_depth=False):
+        ## GROS CHANGE HARDCODED POUR POUVOIR FAIRE SENSITIVER ANALYSIS SI CA BEUG FAUT JUSTE ENLEVER LE BAIL N RANDOM
+        params_excluding_last = {k: params[k] for k in list(params)[:-1]}
+        N_random = params['N_random']
         if fixed_depth:
             params['fixed_depth'] = params.get('fixed_depth', 5)
-        mcts = MCTS_CandyCrush_Complex(self.board, **params)
-        return mcts.best_move()
+        mcts = MCTS_CandyCrush_Complex(self.board, **params_excluding_last)
+        return mcts.best_move(N_random=N_random)
     
     def offline_strategy(self):
         legal_moves = self.board.get_legal_moves()

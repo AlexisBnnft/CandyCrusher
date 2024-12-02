@@ -11,9 +11,9 @@ from concurrent.futures import ProcessPoolExecutor
 strategy = "mcts_fixed_depth"
 n_moves = 10
 n_boards = 100
-exploration_params = [1000, 2000, 3000, 4000, 5000]
+n_random_params = [1, 2, 3, 5]
 
-df = pd.DataFrame(columns=exploration_params, index=range(n_boards))
+df = pd.DataFrame(columns=n_random_params, index=range(n_boards))
 df.to_csv("explo_param_analysis_100.csv")
 
 
@@ -23,12 +23,12 @@ def simulate_board(i):
     board.update()
     board.score = 0
     board_results = {}
-    for exploration_param in exploration_params:
+    for n_random in n_random_params:
         bcopy = board.copy()
         master = Master(strategy, bcopy, n_moves)
-        master.params["exploration_param"] = exploration_param
+        master.params["N_random"] = n_random
         score = master.run_simulation()
-        board_results[exploration_param] = score
+        board_results[n_random] = score
     return i, board_results
 
 
