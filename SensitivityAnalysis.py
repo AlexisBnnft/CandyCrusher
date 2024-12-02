@@ -8,8 +8,8 @@ import pandas as pd
 
 # Define the parameters
 strategy = 'mcts_fixed_depth'
-n_moves = 7
-n_boards = 10
+n_moves = 10
+n_boards = 100
 exploration_params = [1000, 2000, 3000, 4000, 5000]
 
 df=pd.DataFrame(columns=exploration_params, index=range(n_boards))
@@ -26,4 +26,4 @@ for i in tqdm.tqdm(range(n_boards)):
         score = master.run_simulation()
         df.at[i, exploration_param] = score
     
-df.to_csv('explo_param_analysis.csv')
+df.to_csv('explo_param_analysis_100.csv')
