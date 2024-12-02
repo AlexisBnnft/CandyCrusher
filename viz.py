@@ -23,7 +23,7 @@ N_RANDOM = 2
 
 class Viz:
 
-    def __init__(self, board: Board, action: Action, is_colloc: bool = False, N_RANDOM = N_RANDOM, EXPLORATION_PARAM = EXPLORATION_PARAM, N_ROLLOUT = N_ROLLOUT, N_SIMULATION = N_SIMULATION):
+    def __init__(self, board: Board, action: Action, is_colloc: bool = False, N_RANDOM = N_RANDOM, EXPLORATION_PARAM = EXPLORATION_PARAM, N_ROLLOUT = N_ROLLOUT, N_SIMULATION = N_SIMULATION, stop_at_10 = False):
         """
         Initialize the Viz class with a board and an action.
         """
@@ -35,6 +35,8 @@ class Viz:
         self.EXPLORATION_PARAM = EXPLORATION_PARAM
         self.N_ROLLOUT = N_ROLLOUT
         self.N_SIMULATION = N_SIMULATION
+        self.stop_at_10 = stop_at_10
+        self.n_action = 0
 
 
     
@@ -99,6 +101,9 @@ class Viz:
         slider_explo_output.disable()
 
         while run:
+
+            if self.n_action == 10:
+                run = False
             
             pygame.time.delay(50)
 
@@ -230,6 +235,7 @@ class Viz:
                     display_action = True
                     highlight_move = False
                     all_move = None
+                    self.n_action += 1
             if clicked and keys[pygame.K_DOWN]:
                 if i_clicked + 1 < self.board.N:
                     board_copy = self.board.copy()
@@ -238,6 +244,7 @@ class Viz:
                     display_action = True
                     highlight_move = False
                     all_move = None
+                    self.n_action += 1
             if clicked and keys[pygame.K_LEFT]:
                 if j_clicked - 1 >= 0:
                     board_copy = self.board.copy()
@@ -246,6 +253,7 @@ class Viz:
                     display_action = True
                     highlight_move = False
                     all_move = None
+                    self.n_action += 1
             if clicked and keys[pygame.K_RIGHT]:
                 if j_clicked + 1 < self.board.M:
                     board_copy = self.board.copy()
@@ -254,6 +262,7 @@ class Viz:
                     display_action = True
                     highlight_move = False
                     all_move = None
+                    self.n_action += 1
 
             if display_action==False:
                 self.board_visual(candy_images,win,x_cases,width,y_cases,height,clicked,i_clicked,j_clicked,highlight_move,best_move,all_move, visible_menu,time_delay, save_slot=slot_save,mcts_mode=mcts_mode, model=model)
