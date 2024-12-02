@@ -98,7 +98,7 @@ class Master:
             new_board = self.board.copy()
             a=Action(new_board)
             a.swap(*move[0], *move[1])
-            score = predict(new_board.board, self.model)
+            score = predict(new_board.board, self.model) + (new_board.score - self.board.score)
             if score > best_score:
                 best_score = score
                 best_move = move
