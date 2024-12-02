@@ -10,7 +10,6 @@ from torch.utils.data import random_split
 import matplotlib.pyplot as plt
 
 device = torch.device("cpu")
-print(f"Using device: {device}")
 
 # Example unique IDs and types
 unique_ids = [1, 2, 3, 4, 5, 6, 7]
@@ -204,5 +203,4 @@ def load_model(path, device):
     model = CandyCNN()
     model.load_state_dict(torch.load(path, map_location=device))
     model.to(device)
-    print(f"Model loaded from {path}")
     return model
