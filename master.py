@@ -12,7 +12,7 @@ strategy_params = {
     'mcts_base': {
         'exploration_param': 5000,
         'N_rollout': 4,
-        'n_simulation': 1500,
+        'n_simulation': 2000,
         'no_log': True,
         'write_log_file': False,
         'model': None,
@@ -21,7 +21,7 @@ strategy_params = {
     'mcts_fixed_depth': {
         'exploration_param': 5000,
         'N_rollout': 4,
-        'n_simulation': 1500,
+        'n_simulation': 2000,
         'fixed_depth': 4,
         'no_log': True,
         'write_log_file': False,
@@ -34,7 +34,7 @@ strategy_params = {
     'combined': {
         'exploration_param': 5000,
         'N_rollout': 4,
-        'n_simulation': 1500,
+        'n_simulation': 2000,
         'fixed_depth': 4,
         'no_log': True,
         'write_log_file': False,
