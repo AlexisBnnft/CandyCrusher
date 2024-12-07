@@ -16,17 +16,20 @@ try:
 except:
     print("Initializing new session")
     human_df = pd.DataFrame(columns=["score", 'board_init'], index = range(N_b))
+
+first_nan_index = human_df['score'].isnull().idxmax()
 for i in range(10):
-    first_nan_index = human_df['score'].isnull().idxmax()
+    print(first_nan_index)
     b = Board(7,7)
     b.fill_random()
     b.update()
     b.score = 0
     v = Viz(b, Action(b), stop_at_10=True)
-    human_df.iloc[first_nan_index + i]['board_init'] = b.state()
+    human_df.loc[first_nan_index + i,'board_init'] = b.state()
     try:
         v.Visualize()
     except:
-        human_df.iloc[first_nan_index + i]['score'] = b.score
+        print("save", first_nan_index + i)
+        human_df.loc[first_nan_index + i,'score'] = b.score
 
     human_df.to_csv("human.csv")
